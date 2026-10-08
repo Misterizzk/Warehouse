@@ -1,0 +1,7 @@
+openpyxl>=3.1
+opencv-python>=4.8
+Pillow>=10
+qrcode>=7.4
+numpy>=1.26
+reportlab>=4.0
+pypdfium2>=4.0

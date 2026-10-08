@@ -1,0 +1,25 @@
+{
+  "exported_at": "2026-10-08",
+  "reference_date": "2026-09-30",
+  "seed_schema": 7,
+  "inventory_batches": 200,
+  "locations": 324,
+  "history_type": "One synthetic test fixture only; no previous user history. prepare_demo and Windows build remove it.",
+  "fixture_counts": {
+    "batches": 200,
+    "locations": 324,
+    "check_sessions": 1,
+    "check_results": 1,
+    "recommendation_decisions": 0,
+    "recommendation_completions": 0,
+    "stock_movements": 0,
+    "site_demand": 204,
+    "material_unit_compatibility": 49,
+    "customer_demand": 49
+  },
+  "output_sha256": {
+    "warehouse_demo_seed.db": "1678640155915025f0959174ce3a68b1c4ced707ac39376a747f1d20b85d2f3b",
+    "Data_Uji_Warehouse.xlsx": "490336385301ac4b8162e5275d2a05d899cd2067a3226707c5dfc17125e17c10"
+  },
+  "base_seed_date": "2026-09-16"
+}

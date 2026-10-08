@@ -1,0 +1,1 @@
+"""Warehouse Check desktop application."""

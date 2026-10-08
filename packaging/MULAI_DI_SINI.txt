@@ -1,0 +1,54 @@
+WAREHOUSE CHECK 1.0.1 - PAKET UJI COBA WINDOWS
+
+CARA MEMBUKA
+1. Klik dua kali WarehouseCheck.exe.
+2. Dashboard dan Data Barang sudah berisi 200 batch uji di 12 rak.
+3. Python, Excel, dan SQLite tidak perlu diinstal untuk membuka aplikasi.
+4. Riwayat pengecekan dan keputusan petugas masih kosong untuk pengguna baru.
+
+DATA UJI
+Data_Uji_Warehouse.xlsx memuat 200 batch, 324 lokasi, dan petunjuk impor.
+Enam sheet: Inventory, Lokasi, Petunjuk, Demand_Site_Simulasi,
+Kecocokan_Unit, dan Customer_Simulasi. Hanya sheet Inventory dibaca saat impor.
+Sheet simulasi menjelaskan skenario; mengeditnya tidak mengubah saran aplikasi.
+Baca sheet Petunjuk terlebih dahulu.
+Data ini sudah terpasang pada aplikasi. Tidak perlu diimpor ulang.
+Mengimpor file yang sama ke aplikasi ini akan ditandai sebagai duplikat.
+Status umur mengikuti tanggal komputer; jumlah per status dapat berubah.
+
+COBA ALURNYA
+- Data Barang: cari/edit barang, QR/Label, Impor/Ekspor, Barang Keluar.
+- Pengecekan: isi petugas dan area, mulai sesi, masukkan ID batch atau scan,
+  buka Saran & keputusan pada hasil yang dipilih, catat kondisi fisik,
+  keputusan, dan alasan, lalu selesaikan sesi. Setelah tindakan dilakukan,
+  buka lagi hasil tersebut untuk menandai tindak lanjut selesai.
+- Laporan: buka hasil sesi, pratinjau atau simpan Excel/PDF.
+- Dashboard: klik section rak untuk detail kolom/baris/tingkat.
+- Live: aktifkan kamera laptop untuk pemantauan, matikan bila selesai.
+  Live menampilkan rekomendasi dan keputusan terakhir tetapi tidak menyimpan
+  hasil; untuk pencatatan gunakan Pengecekan.
+
+REKOMENDASI SITE/CUSTOMER
+Saran dihitung dari umur dan stok barang serta data simulasi kebutuhan Site
+A/B/C dan kecocokan unit Customer A/B/C. Tujuan, alasan, dan opsi muncul bila
+data pendukung tersedia. Coba cari ID UJI-REC-001 sampai UJI-REC-006 di Data
+Barang untuk melihat contoh skenario; status tetap mengikuti tanggal komputer.
+Di Pengecekan, pilih Saran & keputusan untuk mencatat kondisi fisik, tindakan,
+tujuan Site/Customer, dan alasan. Keputusan tetap ditentukan oleh petugas.
+Mesin rekomendasi memakai aturan dan data uji, bukan AI yang sudah dilatih.
+Stok tidak dipindahkan otomatis dan penawaran tidak dikirim ke customer.
+
+PENYIMPANAN DAN PEMINDAHAN
+Perubahan disimpan pada data\warehouse_demo.db di dalam folder aplikasi.
+Tutup aplikasi, lalu salin seluruh folder untuk membuat cadangan.
+Jika memindahkan aplikasi, pindahkan seluruh folder ini termasuk _internal
+serta data; jangan memindahkan hanya file .exe.
+Simpan di folder yang bisa Anda tulis, misalnya Documents atau Desktop.
+Jangan menimpa folder data ketika memperbarui aplikasi.
+Data pada paket ini terpisah dari database proyek Python sebelumnya.
+
+KAMERA
+Izinkan akses kamera untuk aplikasi desktop di pengaturan Windows.
+Bila kamera dipakai aplikasi lain, tutup aplikasi tersebut terlebih dahulu.
+Kemampuan membaca QR fisik bergantung pada ukuran label, fokus dan cahaya.
+Paket .exe tidak mengubah batas kemampuan pembacaan beberapa QR di lapangan.
