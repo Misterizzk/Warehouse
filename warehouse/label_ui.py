@@ -7,6 +7,9 @@ from tkinter import filedialog
 from PIL import Image, ImageTk
 from .labels import label_image, qr_image, print_document, resolve, payload
 from .ui import BG, PANEL, FG, MUTED, BLUE
+from .theme import (
+    ACCENT_HOVER, DANGER, EDGE, SUCCESS, SURFACE_ALT,
+)
 
 
 class LabelPreview(tk.Toplevel):
@@ -27,7 +30,7 @@ class LabelPreview(tk.Toplevel):
                  font=('Segoe UI',20,'bold')).pack(anchor='w')
         tk.Label(header,text='Batch '+batch_id+'  •  Pilih simpan gambar atau buka pratinjau cetak.',
                  bg=BG,fg=MUTED,font=('Segoe UI',10)).pack(anchor='w',pady=(2,0))
-        self.preview = tk.Label(self,bg=PANEL,highlightbackground='#26445E',highlightthickness=1)
+        self.preview = tk.Label(self,bg=PANEL,highlightbackground=EDGE,highlightthickness=1)
         self.preview.grid(row=1,column=0,sticky='nsew',padx=24,pady=8)
         self.source = source
         self.preview.bind('<Configure>',self.resize)
@@ -40,7 +43,7 @@ class LabelPreview(tk.Toplevel):
         for text,command in [('Simpan QR (PNG)',lambda:self.download(False)),('Simpan label (PNG)',lambda:self.download(True)),
                              ('Pratinjau cetak',self.print_label),('Tutup',self.destroy)]:
             button=tk.Button(actions,text=text,command=command,bg=BLUE if text=='Pratinjau cetak' else PANEL,fg=FG,
-                             activebackground='#22598C',activeforeground=FG,relief='flat',
+                             activebackground=ACCENT_HOVER if text=='Pratinjau cetak' else SURFACE_ALT,activeforeground=FG,relief='flat',
                              padx=12,pady=11,font=('Segoe UI',10),cursor='hand2')
             button.pack(side='left',padx=(0,8))
             self.buttons.append(button)
@@ -62,9 +65,9 @@ class LabelPreview(tk.Toplevel):
         try:
             image=label_image(self.current()) if full_label else qr_image(self.batch_id)
             image.save(path,format='PNG',dpi=(304.8,304.8))
-            self.message.configure(text='Tersimpan: '+path,fg='#58DCA5')
+            self.message.configure(text='Tersimpan: '+path,fg=SUCCESS)
         except (OSError,ValueError) as exc:
-            self.message.configure(text='Gagal menyimpan: '+str(exc),fg='#FFA3AA')
+            self.message.configure(text='Gagal menyimpan: '+str(exc),fg=DANGER)
 
     def print_label(self):
         try:
@@ -74,6 +77,6 @@ class LabelPreview(tk.Toplevel):
             url=Path(file.name).as_uri()
             if not webbrowser.open(url):
                 raise OSError('Browser tidak dapat dibuka. Unduh label PNG lalu cetak dari aplikasi gambar.')
-            self.message.configure(text='Halaman cetak dibuka di browser. Klik Cetak, lalu pilih printer dan ukuran kertas.',fg='#58DCA5')
+            self.message.configure(text='Halaman cetak dibuka di browser. Klik Cetak, lalu pilih printer dan ukuran kertas.',fg=SUCCESS)
         except (OSError,ValueError) as exc:
-            self.message.configure(text='Gagal membuka cetak: '+str(exc),fg='#FFA3AA')
+            self.message.configure(text='Gagal membuka cetak: '+str(exc),fg=DANGER)

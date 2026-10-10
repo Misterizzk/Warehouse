@@ -6,22 +6,18 @@ from pathlib import Path
 from .dashboard import overview
 from .recommendation_data import recommendation_context
 from .recommendations import recommend_for
-from .rack_map import RackMap, STATUS
+from .rack_map import RackMap
 from .visuals import icon
-from .ui import BG, PANEL, FG, MUTED, BLUE, STATUS_BACKGROUNDS
+from .theme import (BG, PANEL, FG, MUTED, ACCENT, ACCENT_HOVER, HEADER, ON_DARK,
+                    MUTED_ON_DARK, EDGE, FOCUS, ROW_SELECTED, DISABLED_FG,
+                    STATUS_COLORS, STATUS_BACKGROUNDS,
+                    VIDEO_BG, VIDEO_FG, VIDEO_MUTED, VIDEO_GRID)
 
-EDGE = '#203D58'
-INK = {name: colors[0] for name, colors in STATUS.items()}
-FILL = dict(STATUS_BACKGROUNDS, **{'Tanpa stok': '#253447'})
+INK = STATUS_COLORS
+FILL = STATUS_BACKGROUNDS
 RACK_ASSET = Path(__file__).resolve().parent.parent / 'assets' / 'warehouse' / 'rack_3x3_dark.png'
 CARTON_ASSET = Path(__file__).resolve().parent.parent / 'assets' / 'warehouse' / 'carton_blank_label.png'
-LABEL_COLORS = {
-    'Normal': ('#EAFBF3', '#14734E'),
-    'Warning': ('#FFF5D8', '#916006'),
-    'Melewati batas': ('#FFE8E8', '#AF2637'),
-    'Tanpa stok': ('#E6EDF3', '#526579'),
-    'Data perlu diperbaiki': ('#F2EAFE', '#684A99'),
-}
+LABEL_COLORS = {name: (FILL[name], INK[name]) for name in INK}
 
 
 class DashboardPage:
@@ -110,14 +106,15 @@ class DashboardPage:
         return tk.Frame(parent, bg=PANEL, highlightbackground=EDGE, highlightthickness=1)
 
     def label(self, parent, text='', size=10, color=MUTED, bold=False, **kwargs):
-        return tk.Label(parent, text=text, bg=PANEL, fg=color, anchor='w',
+        return tk.Label(parent, text=text, bg=kwargs.pop('bg', PANEL), fg=color, anchor='w',
                         font=('Segoe UI', size, 'bold' if bold else 'normal'),
                         borderwidth=0, **dict({'padx':0,'pady':0}, **kwargs))
 
     def action(self, parent, text, command, primary=False):
-        return tk.Button(parent, text=text, command=command, bg=BLUE if primary else PANEL,
-                         fg=FG if primary else '#63B9FF', activebackground='#205588',
-                         activeforeground=FG, relief='flat', borderwidth=0,
+        return tk.Button(parent, text=text, command=command, bg=ACCENT if primary else PANEL,
+                         fg=FG, activebackground=ACCENT_HOVER if primary else ROW_SELECTED,
+                         activeforeground=FG, disabledforeground=DISABLED_FG,
+                         highlightcolor=FOCUS, relief='flat', borderwidth=0,
                          font=('Segoe UI', 10), padx=8, pady=5, cursor='hand2')
 
     def build_map(self):
@@ -176,11 +173,11 @@ class DashboardPage:
         self.images['scan'] = icon('scan', 22, FG, master=self.app.root)
         self.scan_button.configure(image=self.images['scan'], compound='left', pady=7, font=('Segoe UI', 11, 'bold'))
         self.scan_button.pack(side='bottom', fill='x', padx=12, pady=(5, 10))
-        self.camera_banner = self.label(self.camera_panel, '●  Kamera belum aktif', 9, '#A9C5DD', padx=8, pady=5)
-        self.camera_banner.configure(bg='#1A334B')
+        self.camera_banner = self.label(self.camera_panel, '●  Kamera belum aktif', 9, MUTED, padx=8, pady=5)
+        self.camera_banner.configure(bg=FILL['Tanpa stok'])
         self.camera_banner.bind('<Configure>',lambda e:self.camera_banner.configure(wraplength=max(100,e.width-16)))
         self.camera_banner.pack(side='bottom', fill='x', padx=12)
-        self.camera_canvas = tk.Canvas(self.camera_panel, bg='#081A2B', highlightthickness=0, height=120)
+        self.camera_canvas = tk.Canvas(self.camera_panel, bg=VIDEO_BG, highlightthickness=0, height=120)
         self.camera_canvas.pack(fill='both', expand=True, padx=12, pady=(0, 5))
         self.camera_canvas.bind('<Configure>', lambda e: self.draw_camera())
 
@@ -198,24 +195,24 @@ class DashboardPage:
             self.camera_banner.configure(text='Hasil scan terakhir • kamera tidak aktif')
             return
         for x in range(0, w, 26):
-            canvas.create_line(x, 0, x, h, fill='#102A40')
+            canvas.create_line(x, 0, x, h, fill=VIDEO_GRID)
         for y in range(0, h, 26):
-            canvas.create_line(0, y, w, y, fill='#102A40')
+            canvas.create_line(0, y, w, y, fill=VIDEO_GRID)
         if 'standby' not in self.images:
-            self.images['standby'] = icon('scan', 28, '#79B3DB', master=self.app.root)
+            self.images['standby'] = icon('scan', 28, ACCENT, master=self.app.root)
         if h<90:
             canvas.create_image(w/2-98,h/2,image=self.images['standby'])
-            canvas.create_text(w/2+14,h/2,text='Siap memeriksa barang',fill='#97B6D2',font=('Segoe UI',9))
+            canvas.create_text(w/2+14,h/2,text='Siap memeriksa barang',fill=VIDEO_MUTED,font=('Segoe UI',9))
             return
         size = min(65, h * .46)
         x, y = w / 2, max(size / 2 + 5, h / 2 - 11)
         r = size / 2
         for dx, dy in [(-1, -1), (-1, 1), (1, -1), (1, 1)]:
             canvas.create_line(x + dx * (r-10), y + dy*r, x + dx*r, y + dy*r,
-                               x + dx*r, y + dy*(r-10), fill='#52AEF5', width=2)
+                               x + dx*r, y + dy*(r-10), fill=ACCENT, width=2)
         canvas.create_image(x, y, image=self.images['standby'])
         canvas.create_text(w / 2, min(h - 12, y + r + 19), text='Siap memeriksa barang',
-                           fill='#97B6D2', font=('Segoe UI', 9))
+                           fill=VIDEO_MUTED, font=('Segoe UI', 9))
 
     def build_information(self):
         self.info_panel = self.panel(self.right)
@@ -264,18 +261,20 @@ class DashboardPage:
         self.last_button.configure(state='normal' if last else 'disabled')
         for child in self.metrics.winfo_children():
             child.destroy()
-        cards = [('Total item/batch', len(self.data['active']), FG, 'box'),
+        cards = [('Total item/batch', len(self.data['active']), ACCENT, 'box'),
                  *[(s, self.data['counts'][s], INK[s], k) for s, k in [('Normal', 'check'), ('Warning', 'warning'), ('Melewati batas', 'alert')]]]
         for i, (title, count, color, kind) in enumerate(cards):
             self.metrics.columnconfigure(i, weight=1, uniform='cards')
+            card_bg = HEADER if i == 0 else PANEL
             card = self.panel(self.metrics)
+            card.configure(bg=card_bg, highlightbackground=HEADER if i == 0 else EDGE)
             card.grid(row=0, column=i, sticky='nsew', padx=(0, 10 if i < 3 else 0))
-            self.images[kind] = icon(kind, 38, color if i else '#97BDE7', master=self.app.root)
-            tk.Label(card, image=self.images[kind], bg=PANEL).pack(side='left', padx=(14, 12), pady=9)
-            info = tk.Frame(card, bg=PANEL)
+            self.images[kind] = icon(kind, 38, color, master=self.app.root)
+            tk.Label(card, image=self.images[kind], bg=card_bg).pack(side='left', padx=(14, 12), pady=9)
+            info = tk.Frame(card, bg=card_bg)
             info.pack(side='left', fill='both', expand=True, pady=6)
-            self.label(info, title, 11).pack(anchor='w')
-            self.label(info, str(count), 25, color, True).pack(anchor='w')
+            self.label(info, title, 11, MUTED_ON_DARK if i == 0 else MUTED, bg=card_bg).pack(anchor='w')
+            self.label(info, str(count), 25, color, True, bg=card_bg).pack(anchor='w')
         self.map_canvas.set_data(self.data['racks'], self.highlight, self.selected_rack)
         self.priority_tree.delete(*self.priority_tree.get_children())
         self.priority_rows = {row['id']: row for row in self.data['priorities']}
@@ -373,7 +372,7 @@ class DashboardPage:
         lookup = {(c['level'], c['row']): c for c in column_cells}
         header = tk.Frame(win, bg=BG)
         header.pack(fill='x', padx=20, pady=(15, 8))
-        tk.Label(header, text=f'AREA {key[0]}   ›   RAK {key[1]}   ›   KOLOM {column:02d}', bg=BG, fg='#8FB9DC',
+        tk.Label(header, text=f'AREA {key[0]}   ›   RAK {key[1]}   ›   KOLOM {column:02d}', bg=BG, fg=MUTED,
                  font=('Segoe UI', 9, 'bold'), anchor='w').pack(fill='x')
         heading = tk.Frame(header, bg=BG)
         heading.pack(fill='x', pady=(3, 0))
@@ -404,16 +403,16 @@ class DashboardPage:
         self.next_column_button.configure(state='normal' if following else 'disabled')
         self.next_column_button.pack(side='right')
         tk.Label(navigation, text=f'Kolom {column:02d} dari {len(columns)} · Baris {row:02d} dipilih',
-                 bg=BG, fg='#8ED2FF', font=('Segoe UI', 10, 'bold')).pack(expand=True)
+                 bg=BG, fg=FOCUS, font=('Segoe UI', 10, 'bold')).pack(expand=True)
 
-        stage = tk.Frame(win, bg='#0C2034', highlightbackground=EDGE, highlightthickness=1)
+        stage = tk.Frame(win, bg=VIDEO_BG, highlightbackground=EDGE, highlightthickness=1)
         stage.pack(fill='both', expand=True, padx=20, pady=(0, 8))
-        canvas = tk.Canvas(stage, bg='#0C2034', highlightthickness=0)
+        canvas = tk.Canvas(stage, bg=VIDEO_BG, highlightthickness=0)
         canvas.pack(fill='both', expand=True, padx=2, pady=2)
         self.rack_detail_canvas = canvas
         hint = tk.Frame(win, bg=BG)
         hint.pack(fill='x', padx=20, pady=(0, 13))
-        tk.Label(hint, text='Baris terpilih disorot biru · Klik lokasi untuk melihat barang',
+        tk.Label(hint, text='Baris terpilih disorot kuning · Klik lokasi untuk melihat barang',
                  bg=BG, fg=MUTED, font=('Segoe UI', 10), anchor='w').pack(side='left')
         for state in ('Normal', 'Warning', 'Melewati batas', 'Tanpa stok'):
             tk.Label(hint, text='●', bg=BG, fg=INK[state], font=('Segoe UI', 11)).pack(side='left', padx=(12, 2))
@@ -437,12 +436,12 @@ class DashboardPage:
                 caption += f"\n{cell['batches']} batch · {cell['stock']} unit"
             button = tk.Button(canvas, text=caption,
                                command=lambda c=cell: self._open_rack_cell(c),
-                               bg=light, fg=dark, activebackground='#D3EAFC', activeforeground='#0A3F69',
+                               bg=light, fg=dark, activebackground=ROW_SELECTED, activeforeground=FG,
                                relief='flat', borderwidth=0, font=('Segoe UI', 9, 'bold'),
                                cursor='hand2', takefocus=True,
                                highlightthickness=2,
-                               highlightbackground='#6DC6FF' if cell['row'] == row or cell['code'] == self.highlight else light,
-                               highlightcolor='#6DC6FF')
+                               highlightbackground=ACCENT if cell['row'] == row or cell['code'] == self.highlight else light,
+                               highlightcolor=FOCUS)
             button.bind('<Enter>', lambda e, c=cell: self._show_rack_tip(e, c))
             button.bind('<Leave>', lambda e: self._hide_rack_tip())
             button.bind('<FocusIn>', lambda e, c=cell: self._show_rack_tip(e, c))
@@ -459,9 +458,9 @@ class DashboardPage:
             canvas.delete('rack_art')
             # Keep Tk images alive while Canvas displays them.
             photos = []
-            canvas.create_rectangle(0, 0, w, h, fill='#0C2034', outline='', tags='rack_art')
+            canvas.create_rectangle(0, 0, w, h, fill=VIDEO_BG, outline='', tags='rack_art')
             canvas.create_rectangle(10, h - 23, w - 10, h - 11,
-                                    fill='#162C3C', outline='', tags='rack_art')
+                                    fill=VIDEO_GRID, outline='', tags='rack_art')
             use_asset = rack_source is not None and len(levels) == len(rows) == 3
             if use_asset:
                 art_h = max(100, h - 49)
@@ -481,23 +480,23 @@ class DashboardPage:
                 y_centers = [top + cell_h * (i + .5) for i in range(tier_count)]
                 carton_w, carton_h = cell_w * .82, cell_h * .68
                 canvas.create_rectangle(left - 5, top - 4, left + art_w + 5, top + art_h + 5,
-                                        fill='#16283A', outline='#607F98', width=3, tags='rack_art')
+                                        fill='#262D27', outline='#838D7E', width=3, tags='rack_art')
                 for i in range(cols + 1):
                     xx = left + i * cell_w
                     canvas.create_rectangle(xx - 5, top - 4, xx + 5, top + art_h + 5,
-                                            fill='#355674', outline='#7192AB', tags='rack_art')
+                                            fill='#525D50', outline='#9EA897', tags='rack_art')
                 for i in range(tier_count + 1):
                     yy = top + i * cell_h
                     canvas.create_rectangle(left - 5, yy - 4, left + art_w + 5, yy + 5,
-                                            fill='#355674', outline='#7192AB', tags='rack_art')
+                                            fill='#525D50', outline='#9EA897', tags='rack_art')
 
             for j, baris in enumerate(rows):
                 canvas.create_text(x_centers[j], top - 16, text=f'BARIS {baris:02d}',
-                                   fill='#8ED2FF' if baris == row else '#C8DBEC',
+                                   fill=ACCENT if baris == row else VIDEO_FG,
                                    font=('Segoe UI', 10, 'bold'), tags='rack_art')
             for i, level in enumerate(levels):
                 canvas.create_text(left - 18, y_centers[i], text=f'TINGKAT\n{level:02d}',
-                                   anchor='e', justify='right', fill='#C8DBEC',
+                                   anchor='e', justify='right', fill=VIDEO_FG,
                                    font=('Segoe UI', 9, 'bold'), tags='rack_art')
 
             if carton_source is not None:
@@ -520,11 +519,11 @@ class DashboardPage:
                     elif not cell or not cell['batches']:
                         canvas.create_rectangle(x - carton_w / 2, y - carton_h / 2,
                                                 x + carton_w / 2, y + carton_h / 2,
-                                                fill='#142C3C', outline='#47647B', dash=(4, 3),
+                                                fill='#232C24', outline='#707D69', dash=(4, 3),
                                                 tags='rack_art')
                         if not cell:
                             canvas.create_text(x, y, text='LOKASI BELUM\nTERDAFTAR',
-                                               fill='#9BB1C3', font=('Segoe UI', 8),
+                                               fill=VIDEO_MUTED, font=('Segoe UI', 8),
                                                justify='center', tags='rack_art')
                     if cell:
                         win_id = windows[cell['code']]
@@ -543,7 +542,7 @@ class DashboardPage:
                 selected_half_width = art_w * (.139 if use_asset else .5 / len(rows))
                 canvas.create_rectangle(selected_x - selected_half_width, top + 2,
                                         selected_x + selected_half_width, top + art_h - 2,
-                                        outline='#64C5FF', width=3, tags='rack_art')
+                                        outline=ACCENT, width=3, tags='rack_art')
             canvas.tag_lower('rack_art')
             canvas._rack_detail_photos = photos
 
@@ -560,7 +559,7 @@ class DashboardPage:
         tip = tk.Toplevel(self.rack_window)
         tip.overrideredirect(True)
         tk.Label(tip, text=f"{cell['code']}\n{cell['status']} · {cell['batches']} batch · {cell['stock']} unit",
-                 bg='#0A1D2D', fg='#E5F0F9', font=('Segoe UI', 10),
+                 bg=HEADER, fg=ON_DARK, font=('Segoe UI', 10),
                  justify='left', padx=10, pady=7, relief='solid', borderwidth=1).pack()
         tip.update_idletasks()
         x = min(event.x_root + 10, tip.winfo_screenwidth() - tip.winfo_reqwidth() - 8)

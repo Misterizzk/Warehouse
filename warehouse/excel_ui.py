@@ -7,6 +7,10 @@ from tkinter import ttk, filedialog
 from pathlib import Path
 from .inventory_excel import read_inventory, preview, commit_import, write_inventory
 from .ui import BG, PANEL, FG, MUTED, BLUE
+from .theme import (
+    ACCENT_HOVER, DANGER, DANGER_BG, DISABLED_BG, DISABLED_FG,
+    EDGE, NEUTRAL_BG, SUCCESS, SUCCESS_BG, SURFACE_ALT,
+)
 
 
 class ExcelWindow(tk.Toplevel):
@@ -32,7 +36,7 @@ class ExcelWindow(tk.Toplevel):
         options.grid(row=1,column=0,sticky='ew',padx=20)
         options.columnconfigure(0,weight=7,uniform='options')
         options.columnconfigure(1,weight=3,uniform='options')
-        importer=tk.Frame(options,bg=PANEL,highlightbackground='#26445E',highlightthickness=1,padx=15,pady=8)
+        importer=tk.Frame(options,bg=PANEL,highlightbackground=EDGE,highlightthickness=1,padx=15,pady=8)
         importer.grid(row=0,column=0,sticky='nsew',padx=(0,10))
         tk.Label(importer,text='Tambahkan barang dari Excel',bg=PANEL,fg=FG,font=('Segoe UI',13,'bold')).pack(anchor='w')
         tk.Label(importer,text='Ikuti langkah berikut. Data disimpan setelah Anda menekan tombol simpan.',
@@ -52,11 +56,11 @@ class ExcelWindow(tk.Toplevel):
         tk.Label(second,text='Pilih file terisi untuk melihat hasilnya.',bg=PANEL,fg=MUTED,font=('Segoe UI',9),anchor='w').pack(anchor='w',pady=(2,5))
         self.choose_button=self.button(second,'Pilih & periksa file Excel…',self.load,primary=True)
         self.choose_button.pack(fill='x')
-        self.template_status=tk.Label(importer,text='',bg=PANEL,fg='#58DCA5',font=('Segoe UI',9),anchor='w')
+        self.template_status=tk.Label(importer,text='',bg=PANEL,fg=SUCCESS,font=('Segoe UI',9),anchor='w')
         self.path_label=tk.Label(importer,text='Belum ada file dipilih',bg=PANEL,fg=MUTED,font=('Segoe UI',9),anchor='w')
         self.path_label.pack(fill='x',pady=(8,0))
 
-        exporter=tk.Frame(options,bg=PANEL,highlightbackground='#26445E',highlightthickness=1,padx=15,pady=8)
+        exporter=tk.Frame(options,bg=PANEL,highlightbackground=EDGE,highlightthickness=1,padx=15,pady=8)
         exporter.grid(row=0,column=1,sticky='nsew')
         tk.Label(exporter,text='Simpan salinan inventori',bg=PANEL,fg=FG,font=('Segoe UI',13,'bold')).pack(anchor='w')
         description=tk.Label(exporter,text='Buat file Excel berisi semua data barang yang sekarang tersimpan. Data di aplikasi tetap sama.',
@@ -64,14 +68,14 @@ class ExcelWindow(tk.Toplevel):
         description.pack(fill='x',pady=(5,10))
         self.export_button=self.button(exporter,'Ekspor inventori ke Excel',lambda:self.export(False))
         self.export_button.pack(fill='x')
-        self.export_status=tk.Label(exporter,text='',bg=PANEL,fg='#58DCA5',font=('Segoe UI',9),
+        self.export_status=tk.Label(exporter,text='',bg=PANEL,fg=SUCCESS,font=('Segoe UI',9),
                                     justify='left',anchor='w',wraplength=220)
         exporter.bind('<Configure>',lambda e:description.configure(wraplength=max(150,e.width-34)))
         exporter.bind('<Configure>',lambda e:self.export_status.configure(wraplength=max(150,e.width-34)),add='+')
 
         summary=tk.Frame(self,bg=BG)
         summary.grid(row=2,column=0,sticky='ew',padx=20,pady=(10,6))
-        self.validation_badge=tk.Label(summary,text='BELUM DIPERIKSA',bg='#253447',fg=MUTED,
+        self.validation_badge=tk.Label(summary,text='BELUM DIPERIKSA',bg=NEUTRAL_BG,fg=MUTED,
                                        font=('Segoe UI',9,'bold'),padx=10,pady=5)
         self.validation_badge.pack(side='right',padx=(12,0))
         tk.Label(summary,text='3  Tinjau hasil sebelum menyimpan',bg=BG,fg=FG,font=('Segoe UI',13,'bold')).pack(anchor='w')
@@ -100,8 +104,8 @@ class ExcelWindow(tk.Toplevel):
             if float(last)-float(first)>=0.999:sx.grid_remove()
             else:sx.grid(row=1,column=0,sticky='ew')
         self.table.configure(yscrollcommand=sync_vertical,xscrollcommand=sync_horizontal)
-        self.table.tag_configure('error',background='#3A2534',foreground='#FFD1D4')
-        self.table.tag_configure('ready',background='#143D34',foreground='#B5F5D8')
+        self.table.tag_configure('error',background=DANGER_BG,foreground=DANGER)
+        self.table.tag_configure('ready',background=SUCCESS_BG,foreground=SUCCESS)
         self.table.bind('<<TreeviewSelect>>',self.selected)
         self.detail=tk.Label(self,text='Pilih baris untuk melihat detail dan cara memperbaikinya.',bg=BG,fg=MUTED,wraplength=920,justify='left',anchor='w',font=('Segoe UI',9))
         self.detail.grid(row=4,column=0,sticky='ew',padx=20,pady=8)
@@ -109,7 +113,7 @@ class ExcelWindow(tk.Toplevel):
         footer=tk.Frame(self,bg=BG)
         footer.grid(row=5,column=0,sticky='ew',padx=20,pady=(0,15))
         self.save_button=self.button(footer,'Simpan semua barang',self.save,primary=True)
-        self.save_button.configure(state='disabled',bg='#31506C',disabledforeground='#B2C0CD',padx=18,pady=10)
+        self.save_button.configure(state='disabled',bg=DISABLED_BG,disabledforeground=DISABLED_FG,padx=18,pady=10)
         self.save_button.pack(side='right')
         self.done_button=self.button(footer,'Lihat Data Barang',self.close_to_inventory)
         tk.Label(footer,text='Tombol simpan aktif jika semua baris valid. Data lama tidak ditimpa.',
@@ -117,8 +121,8 @@ class ExcelWindow(tk.Toplevel):
         self.pending=None
 
     def button(self,parent,text,command,primary=False):
-        return tk.Button(parent,text=text,command=command,bg=BLUE if primary else '#193A59',fg=FG,
-                         activebackground='#22598C',activeforeground=FG,relief='flat',
+        return tk.Button(parent,text=text,command=command,bg=BLUE if primary else SURFACE_ALT,fg=FG,
+                         activebackground=ACCENT_HOVER if primary else SURFACE_ALT,activeforeground=FG,relief='flat',
                          font=('Segoe UI',10,'bold' if primary else 'normal'),padx=12,pady=7,cursor='hand2')
 
     def close_to_inventory(self):
@@ -134,11 +138,11 @@ class ExcelWindow(tk.Toplevel):
         if not path:return
         try:
             write_inventory(path,self.app.db,template)
-            if template:self.template_status.configure(text='Template tersimpan: '+Path(path).name,fg='#58DCA5')
-            else:self.export_status.configure(text='File tersimpan: '+Path(path).name,fg='#58DCA5')
+            if template:self.template_status.configure(text='Template tersimpan: '+Path(path).name,fg=SUCCESS)
+            else:self.export_status.configure(text='File tersimpan: '+Path(path).name,fg=SUCCESS)
         except (OSError,ValueError,sqlite3.Error) as exc:
             target=self.template_status if template else self.export_status
-            target.configure(text='Gagal menyimpan: '+str(exc),fg='#FFA3AA')
+            target.configure(text='Gagal menyimpan: '+str(exc),fg=DANGER)
         target=self.template_status if template else self.export_status
         if not target.winfo_manager():target.pack(fill='x',pady=(6,0))
 
@@ -151,8 +155,8 @@ class ExcelWindow(tk.Toplevel):
         self.checked=[]
         self.table.delete(*self.table.get_children())
         self.detail.configure(text='Pilih baris untuk melihat detail dan cara memperbaikinya.')
-        self.save_button.configure(state='disabled',bg='#31506C')
-        self.validation_badge.configure(text='MEMERIKSA FILE',bg='#243C55',fg='#B8D4F3')
+        self.save_button.configure(state='disabled',bg=DISABLED_BG)
+        self.validation_badge.configure(text='MEMERIKSA FILE',bg=NEUTRAL_BG,fg=MUTED)
         self.info.configure(text='Sedang memeriksa file '+Path(path).name+'…',fg=MUTED)
         mailbox=queue.Queue()
         def worker():
@@ -167,8 +171,8 @@ class ExcelWindow(tk.Toplevel):
                 self.pending=self.after(80,poll)
                 return
             if error:
-                self.info.configure(text='File belum dapat dibaca: '+error+' Periksa sheet Inventory dan coba pilih file lagi.',fg='#FFA3AA')
-                self.validation_badge.configure(text='FILE BERMASALAH',bg='#492935',fg='#FFA3AA')
+                self.info.configure(text='File belum dapat dibaca: '+error+' Periksa sheet Inventory dan coba pilih file lagi.',fg=DANGER)
+                self.validation_badge.configure(text='FILE BERMASALAH',bg=DANGER_BG,fg=DANGER)
             else:
                 self.source=source
                 self.render_preview()
@@ -196,12 +200,12 @@ class ExcelWindow(tk.Toplevel):
         bad=sum(bool(r['errors']) for r in self.checked)
         ready_count=len(self.checked)-bad
         self.validation_badge.configure(text=f'{ready_count} SIAP  •  {bad} PERLU PERBAIKAN',
-                                        bg='#492935' if bad else '#173D34',fg='#FFA3AA' if bad else '#70E5B3')
+                                        bg=DANGER_BG if bad else SUCCESS_BG,fg=DANGER if bad else SUCCESS)
         self.info.configure(text=f'{len(self.checked)} baris diperiksa • {bad} perlu diperbaiki. '+
                             ('Lihat kolom Hasil validasi, perbaiki di Excel, lalu pilih file lagi.' if bad else 'Semua baris siap ditambahkan.'),
-                            fg='#FFA3AA' if bad else '#58DCA5')
+                            fg=DANGER if bad else SUCCESS)
         ready=bool(self.checked and not bad)
-        self.save_button.configure(state='normal' if ready else 'disabled',bg=BLUE if ready else '#31506C')
+        self.save_button.configure(state='normal' if ready else 'disabled',bg=BLUE if ready else DISABLED_BG)
         self.save_button.configure(text=f'Simpan {len(self.checked)} barang baru' if self.checked and not bad else 'Simpan semua barang')
 
     def selected(self,event=None):
@@ -212,18 +216,18 @@ class ExcelWindow(tk.Toplevel):
             text='; '.join(row['errors']) if row['errors'] else f"Siap disimpan • Material: {data.get('material')} • Lokasi: {data.get('location_code')} • Stok: {data.get('stock')}"
             if row.get('notices'):
                 text += ' • ' + ' '.join(row['notices'])
-            self.detail.configure(text=f"Baris {row['row']}: "+text,fg='#FFA3AA' if row['errors'] else MUTED)
+            self.detail.configure(text=f"Baris {row['row']}: "+text,fg=DANGER if row['errors'] else MUTED)
 
     def save(self):
         try:keys=commit_import(self.app.db,self.source)
         except (ValueError,sqlite3.Error) as exc:
             self.render_preview()
-            self.info.configure(text=str(exc),fg='#FFA3AA')
+            self.info.configure(text=str(exc),fg=DANGER)
             return
         self.source=[]
-        self.save_button.configure(state='disabled',bg='#31506C')
-        self.validation_badge.configure(text=f'{len(keys)} TERSIMPAN',bg='#173D34',fg='#70E5B3')
-        self.info.configure(text=f'{len(keys)} barang baru berhasil disimpan. QR tersedia di detail tiap barang.',fg='#58DCA5')
+        self.save_button.configure(state='disabled',bg=DISABLED_BG)
+        self.validation_badge.configure(text=f'{len(keys)} TERSIMPAN',bg=SUCCESS_BG,fg=SUCCESS)
+        self.info.configure(text=f'{len(keys)} barang baru berhasil disimpan. QR tersedia di detail tiap barang.',fg=SUCCESS)
         self.done_button.pack(side='right',padx=(0,10))
         self.app.show('Data Barang')
 

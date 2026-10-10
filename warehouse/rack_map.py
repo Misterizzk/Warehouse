@@ -1,14 +1,17 @@
 """Interactive, vector-drawn warehouse overview; geometry is schematic only."""
 import math
 import tkinter as tk
+from .theme import (ACCENT, FOCUS, HEADER, ON_DARK, VIDEO_BG, VIDEO_FG,
+                    VIDEO_MUTED, VIDEO_GRID, VIDEO_STATUS_COLORS)
 
 
+# Diagram colors remain distinct from the dark ink used on light app cards.
 STATUS = {
-    'Normal': ('#2CC982', '#164A3E', 'N'),
-    'Warning': ('#FFBD3D', '#665026', 'W'),
-    'Melewati batas': ('#FF646F', '#682F3D', '!'),
-    'Tanpa stok': ('#788C9F', '#2D3D4C', '–'),
-    'Data perlu diperbaiki': ('#C3A1FA', '#4B3D67', '?'),
+    'Normal': (VIDEO_STATUS_COLORS['Normal'], '#234D38', 'N'),
+    'Warning': (VIDEO_STATUS_COLORS['Warning'], '#63521A', 'W'),
+    'Melewati batas': (VIDEO_STATUS_COLORS['Melewati batas'], '#612F38', '!'),
+    'Tanpa stok': (VIDEO_STATUS_COLORS['Tanpa stok'], '#343D33', '–'),
+    'Data perlu diperbaiki': (VIDEO_STATUS_COLORS['Data perlu diperbaiki'], '#43483B', '?'),
 }
 
 
@@ -20,7 +23,7 @@ class RackMap(tk.Canvas):
     """
 
     def __init__(self, parent, on_section, **kwargs):
-        kwargs.setdefault('bg', '#0C1D2C')
+        kwargs.setdefault('bg', VIDEO_BG)
         kwargs.setdefault('highlightthickness', 0)
         kwargs.setdefault('takefocus', True)
         kwargs.setdefault('height', 340)
@@ -91,35 +94,35 @@ class RackMap(tk.Canvas):
         self.page = min(self.page, pages - 1)
         shown = keys[self.page * self.page_size:(self.page + 1) * self.page_size]
         self.create_text(14, 10, text='TAMPAK ATAS · KLIK SECTION UNTUK LIHAT TINGKAT', anchor='w',
-                         fill='#90A9C0', font=('Segoe UI', 8, 'bold'))
+                         fill=VIDEO_MUTED, font=('Segoe UI', 8, 'bold'))
         if pages > 1:
             self._page_control(width - 102, 9, '‹', -1, self.page > 0)
             self.create_text(width - 65, 9, text=f'{self.page + 1} / {pages}',
-                             fill='#C5D8EA', font=('Segoe UI', 9))
+                             fill=VIDEO_FG, font=('Segoe UI', 9))
             self._page_control(width - 28, 9, '›', 1, self.page < pages - 1)
         else:
             self.create_text(width - 14, 10, text=f'{len(keys)} rak', anchor='e',
-                             fill='#90A9C0', font=('Segoe UI', 9))
+                             fill=VIDEO_MUTED, font=('Segoe UI', 9))
         if not shown:
             self.create_text(width / 2, height / 2, text='Belum ada lokasi di area ini',
-                             fill='#ADC2D6', font=('Segoe UI', 12))
+                             fill=VIDEO_MUTED, font=('Segoe UI', 12))
             return
 
         left, top, right, bottom = 13, 31, width - 13, height - 13
         # Shallow floor gradient and construction lines keep this diagram crisp
         # at any desktop scale, with no raster mockup masquerading as live data.
-        self.create_rectangle(left + 5, top + 6, right + 5, bottom + 5, fill='#06111D', outline='')
+        self.create_rectangle(left + 5, top + 6, right + 5, bottom + 5, fill='#0D110E', outline='')
         bands = 24
         for i in range(bands):
             y0 = top + (bottom - top) * i / bands
             y1 = top + (bottom - top) * (i + 1) / bands + 1
             value = round(29 + 9 * i / bands)
-            color = f'#{value-7:02x}{value+7:02x}{value+18:02x}'
+            color = f'#{value-2:02x}{value+3:02x}{value-1:02x}'
             self.create_rectangle(left, y0, right, y1, fill=color, outline='')
         for x in range(int(left + 38), int(right), 38):
-            self.create_line(x, top, x, bottom, fill='#253C4D')
+            self.create_line(x, top, x, bottom, fill=VIDEO_GRID)
         for y in range(int(top + 36), int(bottom), 36):
-            self.create_line(left, y, right, y, fill='#253C4D')
+            self.create_line(left, y, right, y, fill=VIDEO_GRID)
         self._walls(left, top, right, bottom)
 
         # A wider aisle divides the two groups, matching the overview reference.
@@ -144,30 +147,30 @@ class RackMap(tk.Canvas):
         if aisle_after:
             aisle_x = start + 3 * unit_width + 2.5 * gap + extra_aisle / 2
             self.create_text(aisle_x, (rack_top + rack_bottom) / 2,
-                             text='L O R O N G', angle=90, fill='#7B96AD', font=('Segoe UI', 8, 'bold'))
+                             text='L O R O N G', angle=90, fill=VIDEO_MUTED, font=('Segoe UI', 8, 'bold'))
             for y in (rack_top + 15, rack_bottom - 15):
-                self.create_line(aisle_x, y - 5, aisle_x, y + 5, fill='#577284', arrow='last', width=1)
+                self.create_line(aisle_x, y - 5, aisle_x, y + 5, fill='#8E9A85', arrow='last', width=1)
         # A marked entry is decorative, not a claim about physical warehouse dimensions.
         middle = (left + right) / 2
-        self.create_rectangle(middle - 32, bottom - 3, middle + 32, bottom + 3, fill='#142A3A', outline='')
-        self.create_line(middle - 31, bottom - 6, middle + 31, bottom - 6, fill='#7B93A2', width=2)
+        self.create_rectangle(middle - 32, bottom - 3, middle + 32, bottom + 3, fill='#252E25', outline='')
+        self.create_line(middle - 31, bottom - 6, middle + 31, bottom - 6, fill='#9DA78F', width=2)
         for direction in (-1, 1):
             x = middle + direction * 35
-            self.create_rectangle(x - 5, bottom - 8, x + 5, bottom + 3, fill='#B98B2D', outline='')
-            self.create_line(x - 4, bottom + 2, x + 4, bottom - 7, fill='#263441', width=3)
+            self.create_rectangle(x - 5, bottom - 8, x + 5, bottom + 3, fill=ACCENT, outline='')
+            self.create_line(x - 4, bottom + 2, x + 4, bottom - 7, fill='#30362D', width=3)
         if self.focus_get() is self:
-            self.create_rectangle(1, 1, width - 2, height - 2, outline='#64B7FF', dash=(3, 3))
+            self.create_rectangle(1, 1, width - 2, height - 2, outline=ACCENT, dash=(3, 3))
 
     def _walls(self, left, top, right, bottom):
-        self.create_rectangle(left, top, right, bottom, outline='#61788A', width=7)
-        self.create_rectangle(left + 3, top + 3, right - 3, bottom - 3, outline='#9BACB7', width=1)
-        self.create_rectangle(left + 7, top + 7, right - 7, bottom - 7, outline='#102132', width=2)
+        self.create_rectangle(left, top, right, bottom, outline='#727D69', width=7)
+        self.create_rectangle(left + 3, top + 3, right - 3, bottom - 3, outline='#A8B29C', width=1)
+        self.create_rectangle(left + 7, top + 7, right - 7, bottom - 7, outline='#20281F', width=2)
         for x in range(int(left + 25), int(right - 15), 86):
             for y in (top, bottom):
-                self.create_rectangle(x - 4, y - 4, x + 4, y + 6, fill='#748B99', outline='#A3B3BA')
+                self.create_rectangle(x - 4, y - 4, x + 4, y + 6, fill='#818B76', outline='#B5BDAA')
         for y in range(int(top + 46), int(bottom - 15), 90):
             for x in (left, right):
-                self.create_rectangle(x - 4, y - 5, x + 5, y + 5, fill='#748B99', outline='#A3B3BA')
+                self.create_rectangle(x - 4, y - 5, x + 5, y + 5, fill='#818B76', outline='#B5BDAA')
 
     def _rack(self, key, rack, x, y, width, height):
         rack_index = len(self.rack_bounds)
@@ -175,18 +178,18 @@ class RackMap(tk.Canvas):
         color, _, _ = STATUS.get(rack['status'], STATUS['Data perlu diperbaiki'])
         selected = key == self.selected
         last = any(c['code'] == self.highlight for c in rack['cells'])
-        self.create_text(x + width / 2, y - 28, text=f'AREA {key[0]}', fill='#A7BED0',
+        self.create_text(x + width / 2, y - 28, text=f'AREA {key[0]}', fill=VIDEO_MUTED,
                          font=('Segoe UI', 8))
-        self.create_text(x + width / 2, y - 11, text=key[1], fill='#F0F7FD',
+        self.create_text(x + width / 2, y - 11, text=key[1], fill=VIDEO_FG,
                          font=('Segoe UI', 10, 'bold'))
         self.create_rectangle(x + 6, y + 7, x + width + 6, y + height + 6,
-                              fill='#0B1722', outline='')
+                              fill='#101510', outline='')
         if selected or last:
             self.create_rectangle(x - 4, y - 4, x + width + 4, y + height + 4,
-                                  outline='#2B71AA', width=5)
+                                  outline=FOCUS, width=5)
             self.create_rectangle(x - 4, y - 4, x + width + 4, y + height + 4,
-                                  outline='#7CCBFF' if last else '#5CAFFF', width=2)
-        self.create_rectangle(x, y, x + width, y + height, fill='#102230',
+                                  outline=ACCENT, width=2)
+        self.create_rectangle(x, y, x + width, y + height, fill='#202A20',
                               outline=color, width=3)
         grid_left, grid_top = x + 14, y + 17
         grid_right, grid_bottom = x + width - 5, y + height - 5
@@ -196,11 +199,11 @@ class RackMap(tk.Canvas):
         for column in range(1, 4):
             center = grid_left + (column - .5) * cell_width
             self.create_text(center, y + 8, text=f'K{column:02d}',
-                             fill='#BDD0E1', font=('Segoe UI', 7, 'bold'))
+                             fill=VIDEO_FG, font=('Segoe UI', 7, 'bold'))
         for row in range(1, 4):
             center = grid_top + (row - .5) * cell_height
             self.create_text(x + 7, center, text=f'R{row}', angle=90,
-                             fill='#BDD0E1', font=('Segoe UI', 7, 'bold'))
+                             fill=VIDEO_FG, font=('Segoe UI', 7, 'bold'))
             for column in range(1, 4):
                 section = rack['sections'].get((column, row))
                 if section is None:
@@ -216,12 +219,12 @@ class RackMap(tk.Canvas):
                 active = self.selected_section == (key, column, row)
                 highlighted = any(c['code'] == self.highlight for c in section['cells'])
                 self.create_rectangle(x0, y0, x1, y1, fill=section_fill,
-                                      outline='#6DC6FF' if active or highlighted else section_color,
+                                      outline=ACCENT if active or highlighted else section_color,
                                       width=2 if active or highlighted else 1, tags=(tag,))
                 self.create_line(x0 + 2, y0 + 2, x1 - 2, y0 + 2,
                                  fill=section_color, width=2, tags=(tag,))
                 self.create_text((x0 + x1) / 2, (y0 + y1) / 2 + 1,
-                                 text=section_symbol, fill='#FFFFFF',
+                                 text=section_symbol, fill=ON_DARK,
                                  font=('Segoe UI', 8, 'bold'), tags=(tag,))
                 self.tag_bind(tag, '<Button-1>',
                               lambda e, k=key, c=column, r=row: self._open_section(k, c, r))
@@ -234,8 +237,8 @@ class RackMap(tk.Canvas):
     def _page_control(self, x, y, text, delta, enabled):
         tag = f'page_{delta}'
         self.create_rectangle(x - 12, y - 10, x + 12, y + 10,
-                              fill='#203C53' if enabled else '#152B3D', outline='', tags=(tag,))
-        self.create_text(x, y - 1, text=text, fill='#DFEDFA' if enabled else '#50677A',
+                              fill='#3A4635' if enabled else '#252F23', outline='', tags=(tag,))
+        self.create_text(x, y - 1, text=text, fill=VIDEO_FG if enabled else '#818B77',
                          font=('Segoe UI', 15, 'bold'), tags=(tag,))
         if enabled:
             self.tag_bind(tag, '<Button-1>', lambda e: self._change_page(delta))
@@ -300,7 +303,7 @@ class RackMap(tk.Canvas):
         tip = self._tooltip = tk.Toplevel(self)
         tip.overrideredirect(True)
         tip.attributes('-topmost', True)
-        tk.Label(tip, text=text, bg='#0A1D2D', fg='#E5F0F9', font=('Segoe UI', 10),
+        tk.Label(tip, text=text, bg=HEADER, fg=ON_DARK, font=('Segoe UI', 10),
                  justify='left', padx=12, pady=9, relief='solid', borderwidth=1).pack()
         tip.update_idletasks()
         x = min(x, self.winfo_screenwidth() - tip.winfo_reqwidth() - 8)

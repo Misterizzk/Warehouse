@@ -7,14 +7,18 @@ from PIL import ImageTk
 from .reports import history,report_data,export_excel,export_pdf,decision_target
 from .inventory_table import InventoryTable
 from .ui import BG,PANEL,FG,MUTED,BLUE,display_time
+from .theme import (
+    ACCENT_HOVER, DANGER, DISABLED_FG, FIELD_BORDER, FOCUS,
+    ROW_ALT, SUCCESS, SURFACE_ALT,
+)
 
 
 def action(parent,text,command,primary=False):
     return tk.Button(parent,text=text,command=command,bg=BLUE if primary else PANEL,fg=FG,
-                     activebackground='#1A6CD0' if primary else '#1B3A57',activeforeground=FG,
-                     disabledforeground='#8FA6BB',relief='flat',padx=12,pady=10,
+                     activebackground=ACCENT_HOVER if primary else SURFACE_ALT,activeforeground=FG,
+                     disabledforeground=DISABLED_FG,relief='flat',padx=12,pady=10,
                      font=('Segoe UI',10,'bold' if primary else 'normal'),cursor='hand2',
-                     highlightthickness=1,highlightbackground=BG,highlightcolor='#68B7FF')
+                     highlightthickness=1,highlightbackground=BG,highlightcolor=FOCUS)
 
 
 class ReportPage:
@@ -39,7 +43,7 @@ class ReportPage:
             var=tk.StringVar(value=value)
             self.filters[key]=var
             tk.Label(filters,text=title,bg=PANEL,fg=MUTED,font=('Segoe UI',10)).grid(row=0,column=i,sticky='w',padx=(0,10),pady=(0,5))
-            entry=ttk.Combobox(filters,textvariable=var,values=('Semua','Draft','Selesai'),state='readonly',width=12,style='Warehouse.TCombobox') if key=='status' else tk.Entry(filters,textvariable=var,bg='#17324D',fg=FG,insertbackground=FG,width=18,font=('Segoe UI',10),relief='flat',highlightthickness=1,highlightbackground='#355470',highlightcolor=BLUE)
+            entry=ttk.Combobox(filters,textvariable=var,values=('Semua','Draft','Selesai'),state='readonly',width=12,style='Warehouse.TCombobox') if key=='status' else tk.Entry(filters,textvariable=var,bg=PANEL,fg=FG,insertbackground=FG,width=18,font=('Segoe UI',10),relief='flat',highlightthickness=1,highlightbackground=FIELD_BORDER,highlightcolor=FOCUS)
             entry.grid(row=1,column=i,sticky='ew',padx=(0,10),ipady=5)
             entry.bind('<Return>',lambda e:self.refresh())
         toolbar=tk.Frame(self.body,bg=BG)
@@ -58,7 +62,7 @@ class ReportPage:
             self.table.heading(key,text=title)
             self.table.column(key,width=width,minwidth=width)
         self.table.tag_configure('even',background=PANEL,foreground=FG)
-        self.table.tag_configure('odd',background='#152E47',foreground=FG)
+        self.table.tag_configure('odd',background=ROW_ALT,foreground=FG)
         self.table.grid(row=0,column=0,sticky='nsew')
         sy=ttk.Scrollbar(host,command=self.table.yview)
         sy.grid(row=0,column=1,sticky='ns')
@@ -78,7 +82,7 @@ class ReportPage:
         if values['status']=='Semua':values['status']=''
         try:rows=history(self.app.db,**values)
         except ValueError as exc:
-            self.info.configure(text=str(exc),fg='#FFA3AA')
+            self.info.configure(text=str(exc),fg=DANGER)
             return
         self.table.delete(*self.table.get_children())
         for index,r in enumerate(rows):
@@ -167,12 +171,12 @@ class ReportPage:
         if not path:return
         try:
             (export_pdf if kind=='pdf' else export_excel)(self.data,path)
-            self.info.configure(text='Laporan tersimpan: '+path,fg='#58DCA5')
-        except Exception as exc:self.info.configure(text='Ekspor gagal: '+str(exc),fg='#FFA3AA')
+            self.info.configure(text='Laporan tersimpan: '+path,fg=SUCCESS)
+        except Exception as exc:self.info.configure(text='Ekspor gagal: '+str(exc),fg=DANGER)
 
     def preview(self):
         try:self.pdf_preview=PDFPreview(self.app.root,self.data)
-        except Exception as exc:self.info.configure(text='Preview gagal: '+str(exc),fg='#FFA3AA')
+        except Exception as exc:self.info.configure(text='Preview gagal: '+str(exc),fg=DANGER)
 
 
 class PDFPreview(tk.Toplevel):
@@ -207,7 +211,7 @@ class PDFPreview(tk.Toplevel):
         host.grid(row=1,column=0,sticky='nsew')
         host.columnconfigure(0,weight=1)
         host.rowconfigure(0,weight=1)
-        self.canvas=tk.Canvas(host,bg='#273B50',highlightthickness=0)
+        self.canvas=tk.Canvas(host,bg=SURFACE_ALT,highlightthickness=0)
         self.canvas.grid(row=0,column=0,sticky='nsew')
         sy=ttk.Scrollbar(host,command=self.canvas.yview)
         sy.grid(row=0,column=1,sticky='ns')

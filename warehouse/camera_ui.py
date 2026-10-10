@@ -10,6 +10,10 @@ from .labels import resolve
 from .domain import aging
 from .sessions import Sessions
 from .ui import BG,PANEL,FG,MUTED,BLUE,STATUS_COLORS,STATUS_BACKGROUNDS
+from .theme import (
+    ACCENT_HOVER, DANGER, DANGER_BG, FIELD_BORDER, SUCCESS,
+    SUCCESS_BG, SURFACE_ALT, VIDEO_BG, VIDEO_FG, VIDEO_STATUS_COLORS,
+)
 
 
 class CameraWindow(tk.Toplevel):
@@ -47,19 +51,19 @@ class CameraWindow(tk.Toplevel):
                                   style='Warehouse.TCombobox',values=[f'Kamera {i+1} — perangkat {i}' for i in range(5)])
         self.devices.pack(side='left')
         self.scan_devices=tk.Button(toolbar,text='Deteksi kamera',command=self.discover,bg=PANEL,fg=FG,
-                                    activebackground='#1B3A57',activeforeground=FG,relief='flat',padx=12,pady=9,cursor='hand2')
+                                    activebackground=SURFACE_ALT,activeforeground=FG,relief='flat',padx=12,pady=9,cursor='hand2')
         self.scan_devices.pack(side='left',padx=8)
         self.start_button=tk.Button(toolbar,text='Aktifkan kamera',command=self.start,bg=BLUE,fg=FG,
-                                    activebackground='#1A6CD0',activeforeground=FG,relief='flat',padx=12,pady=9,cursor='hand2')
+                                    activebackground=ACCENT_HOVER,activeforeground=FG,relief='flat',padx=12,pady=9,cursor='hand2')
         self.start_button.pack(side='left')
         self.stop_button=tk.Button(toolbar,text='Hentikan kamera',command=self.stop,bg=PANEL,fg=FG,
-                                   activebackground='#1B3A57',activeforeground=FG,relief='flat',padx=12,pady=9,
+                                   activebackground=SURFACE_ALT,activeforeground=FG,relief='flat',padx=12,pady=9,
                                    cursor='hand2',state='disabled')
         self.stop_button.pack(side='left',padx=8)
         tk.Label(self,text='1. Deteksi dan pilih kamera.  2. Aktifkan kamera.  3. Arahkan satu QR, periksa hasil, lalu simpan.',
                  bg=BG,fg=MUTED,font=('Segoe UI',10),wraplength=width-40,anchor='w',justify='left').grid(
             row=2,column=0,sticky='w',padx=16,pady=(0,8))
-        self.canvas=tk.Canvas(self,bg='#050B11',highlightthickness=1,highlightbackground='#355470')
+        self.canvas=tk.Canvas(self,bg=VIDEO_BG,highlightthickness=1,highlightbackground=FIELD_BORDER)
         self.canvas.grid(row=3,column=0,sticky='nsew',padx=16)
         self.banner=tk.Label(self,text='Kamera belum aktif. Pilih perangkat lalu klik Aktifkan kamera.',
                              bg=PANEL,fg=FG,anchor='w',justify='left',font=('Segoe UI',11,'bold'),
@@ -68,19 +72,19 @@ class CameraWindow(tk.Toplevel):
         actions=tk.Frame(self,bg=BG)
         actions.grid(row=5,column=0,sticky='ew',padx=16,pady=(0,12))
         self.confirm_button=tk.Button(actions,text='Simpan hasil scan',state='disabled',command=self.confirm,bg=BLUE,fg=FG,
-                                      activebackground='#1A6CD0',activeforeground=FG,relief='flat',
+                                      activebackground=ACCENT_HOVER,activeforeground=FG,relief='flat',
                                       font=('Segoe UI',11,'bold'),padx=16,pady=10,cursor='hand2')
         self.confirm_button.pack(side='left')
         self.next_button=tk.Button(actions,text='Scan barang berikutnya',command=self.next_scan,bg=PANEL,fg=FG,
-                                   activebackground='#1B3A57',activeforeground=FG,relief='flat',padx=16,pady=10,
+                                   activebackground=SURFACE_ALT,activeforeground=FG,relief='flat',padx=16,pady=10,
                                    cursor='hand2',state='disabled')
         self.next_button.pack(side='left',padx=8)
         self.map_button=tk.Button(actions,text='Lihat lokasi barang',command=lambda:app.show('Dashboard'),state='disabled',
-                                  bg=PANEL,fg=FG,activebackground='#1B3A57',activeforeground=FG,
+                                  bg=PANEL,fg=FG,activebackground=SURFACE_ALT,activeforeground=FG,
                                   relief='flat',padx=12,pady=10,cursor='hand2')
         self.map_button.pack(side='left',padx=4)
         tk.Button(actions,text='Tutup',command=self.destroy,bg=PANEL,fg=FG,
-                  activebackground='#1B3A57',activeforeground=FG,relief='flat',padx=16,pady=10,cursor='hand2').pack(side='right')
+                  activebackground=SURFACE_ALT,activeforeground=FG,relief='flat',padx=16,pady=10,cursor='hand2').pack(side='right')
         self.protocol('WM_DELETE_WINDOW',self.destroy)
         self.bind('<Escape>',lambda e:self.destroy())
         self.bind('<Configure>',lambda e:self.banner.configure(wraplength=max(400,e.width-60)) if e.widget is self else None)
@@ -129,7 +133,7 @@ class CameraWindow(tk.Toplevel):
         try:self._start_worker(index)
         except (ValueError,sqlite3.Error) as exc:
             self.controls(False)
-            self.banner.configure(text=str(exc),bg='#40242D',fg='#FF8A8A')
+            self.banner.configure(text=str(exc),bg=DANGER_BG,fg=DANGER)
 
     def discover(self):
         if self.running or self._pending_start is not None:return
@@ -203,22 +207,22 @@ class CameraWindow(tk.Toplevel):
             if not old:item['age'],item['status']=aging(item['received_date'],normal_max=session['normal_max'],age_limit=session['age_limit'])
             self.candidate=code
             self.next_button.configure(text='Lewati hasil ini',state='normal')
-            color=STATUS_COLORS[item['status']]
+            color=VIDEO_STATUS_COLORS[item['status']]
             coords=[coordinate for px,py in points for coordinate in (x+px*ratio,y+py*ratio)]
             self.canvas.create_polygon(*coords,outline=color,fill='',width=3,tags='overlay')
             card_width=min(355,width-32)
             left=width-card_width-12
             text=f"{item['status'].upper()}  •  {item['age']} hari\nMaterial: {item['material']}\n{item['description']}\nLokasi: {item['location_code']}\nTanggal masuk (GR): {item['received_date']}\nStok: {item['stock']}"
-            card=self.canvas.create_text(left+14,24,text=text,anchor='nw',width=card_width-28,fill=FG,font=('Segoe UI',11,'bold'),tags='overlay')
+            card=self.canvas.create_text(left+14,24,text=text,anchor='nw',width=card_width-28,fill=VIDEO_FG,font=('Segoe UI',11,'bold'),tags='overlay')
             bounds=self.canvas.bbox(card)
-            rect=self.canvas.create_rectangle(left,12,width-12,bounds[3]+12,fill=PANEL,outline=color,width=3,tags='overlay')
+            rect=self.canvas.create_rectangle(left,12,width-12,bounds[3]+12,fill=VIDEO_BG,outline=color,width=3,tags='overlay')
             self.canvas.tag_lower(rect,card)
             prefix='Sudah ada di sesi; hasil pertama dipertahankan.' if old else 'QR terbaca — belum disimpan. Klik Simpan hasil scan untuk memasukkannya ke sesi.'
-            self.banner.configure(text=f"{item['status']} • {item['age']} hari. {prefix}",bg=STATUS_BACKGROUNDS[item['status']],fg=color)
+            self.banner.configure(text=f"{item['status']} • {item['age']} hari. {prefix}",bg=STATUS_BACKGROUNDS[item['status']],fg=STATUS_COLORS[item['status']])
             self.confirm_button.configure(state='normal')
         except (ValueError,sqlite3.Error) as exc:
             self.candidate=None
-            self.banner.configure(text='QR belum dapat diproses: '+str(exc),bg='#40242D',fg='#FF8A8A')
+            self.banner.configure(text='QR belum dapat diproses: '+str(exc),bg=DANGER_BG,fg=DANGER)
 
     def confirm(self):
         if self.candidate is None:return
@@ -228,10 +232,10 @@ class CameraWindow(tk.Toplevel):
             self.confirm_button.configure(state='disabled')
             self.candidate=None
             self.next_button.configure(text='Scan barang berikutnya',state='normal')
-            self.banner.configure(text='Hasil tersimpan. Klik Scan berikutnya untuk barang lain.' if added else 'Batch sudah tercatat; tidak ada baris tambahan. Klik Scan berikutnya.',bg='#12372F',fg='#58DCA5')
+            self.banner.configure(text='Hasil tersimpan. Klik Scan berikutnya untuk barang lain.' if added else 'Batch sudah tercatat; tidak ada baris tambahan. Klik Scan berikutnya.',bg=SUCCESS_BG,fg=SUCCESS)
             self.on_saved(key)
             self.map_button.configure(state='normal')
-        except (ValueError,sqlite3.Error) as exc:self.banner.configure(text='Belum tersimpan: '+str(exc),fg='#FF8A8A')
+        except (ValueError,sqlite3.Error) as exc:self.banner.configure(text='Belum tersimpan: '+str(exc),bg=DANGER_BG,fg=DANGER)
 
     def poll(self):
         self.pending=None
@@ -247,7 +251,7 @@ class CameraWindow(tk.Toplevel):
                 elif kind=='error':
                     self.candidate=None
                     self.confirm_button.configure(state='disabled')
-                    self.banner.configure(text=value,bg='#40242D',fg='#FF8A8A')
+                    self.banner.configure(text=value,bg=DANGER_BG,fg=DANGER)
                 else:self.banner.configure(text=value)
         except queue.Empty:pass
         try:

@@ -17,5 +17,4 @@ data/
 !data_uji/warehouse_demo_seed.db
 Aplikasi_Warehouse_Check*/
 arsip/
-outputs/*
-!outputs/Warehouse_Check_Dokumentasi_Kode_Pengembang.pdf
+outputs/

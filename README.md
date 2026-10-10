@@ -1,6 +1,8 @@
 # Warehouse Check / SPARK
 
-Aplikasi desktop untuk memantau umur barang, mencari lokasi rak, membuat QR, mencatat pengecekan dan keputusan petugas, serta mengekspor laporan. Folder ini adalah source aplikasi terbaru versi 1.0.1 dengan SQLite schema 7, disiapkan untuk GitHub pada 8 Oktober 2026.
+Aplikasi desktop untuk memantau umur barang, mencari lokasi rak, membuat QR, mencatat pengecekan dan keputusan petugas, serta mengekspor laporan. Folder ini adalah source aplikasi versi 1.0.1 dengan SQLite schema 7.
+
+Tema desktop memakai putih hangat, charcoal, dan kuning `#FFD500`. Warna bersama berada di `warehouse/theme.py`. Ketiga kartu status berlatar putih, dengan ikon dan angka yang mengikuti status barang; kartu total memakai charcoal.
 
 ## Menjalankan source di Windows
 
@@ -41,14 +43,13 @@ Riwayat pengguna dari proyek asal, database executable, arsip, lingkungan Python
 
 ## Dokumentasi
 
-- [Dokumentasi kode dan sintaks (PDF)](outputs/Warehouse_Check_Dokumentasi_Kode_Pengembang.pdf)
 - [Arsitektur](ARCHITECTURE.md)
 - [Panduan pengembang](docs/PANDUAN_PENGEMBANG.md)
 - [Data dan aturan bisnis](docs/DATA_DAN_ATURAN_BISNIS.md)
 - [Rekomendasi dan keputusan](docs/SISTEM_REKOMENDASI.md)
 - [Antarmuka dan kamera](docs/ANTARMUKA_DAN_KAMERA.md)
 
-Dokumen rinci/PDF disusun dari workspace asal pada 5 Oktober 2026. Path `.build/venv` dan folder executable yang disebut di sana adalah konteks workspace tersebut; untuk repository ini ikuti setup dalam README. Bukti verifikasi lokal lama tidak ikut diunggah.
+Dokumen pengembang awal disusun dari workspace asal pada 5 Oktober 2026. Path `.build/venv` dan folder executable yang disebut di sana adalah konteks workspace tersebut; untuk repository ini ikuti setup dalam README. Presentasi, PDF, bukti verifikasi lokal, dan folder `outputs/` tidak disertakan dalam repository ini.
 
 ## Pengujian
 

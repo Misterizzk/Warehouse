@@ -12,10 +12,14 @@ from .labels import resolve
 from .recommendations import RecommendationService, recommend_for
 from .recommendation_data import recommendation_context
 from .ui import BG, PANEL, FG, MUTED, BLUE, EDGE, STATUS_COLORS, STATUS_BACKGROUNDS, display_time
+from .theme import (
+    ACCENT_HOVER, FIELD_BORDER, FOCUS, NEUTRAL_BG, SURFACE_ALT,
+    VIDEO_BG, VIDEO_FG, VIDEO_MUTED, VIDEO_STATUS_COLORS,
+)
 
 
-INK = dict(STATUS_COLORS, **{'Stok habis': '#A9BBD0', 'QR tidak dikenal': '#C4D0DF'})
-TINT = dict(STATUS_BACKGROUNDS, **{'Stok habis': '#263649', 'QR tidak dikenal': '#263649'})
+INK = dict(STATUS_COLORS, **{'Stok habis': MUTED, 'QR tidak dikenal': MUTED})
+TINT = dict(STATUS_BACKGROUNDS, **{'Stok habis': NEUTRAL_BG, 'QR tidak dikenal': NEUTRAL_BG})
 PRIORITY = {'Melewati batas': 0, 'Warning': 1, 'Normal': 2,
             'Stok habis': 3, 'Data perlu diperbaiki': 3, 'QR tidak dikenal': 4}
 
@@ -83,12 +87,12 @@ class LivePage:
 
     def _button(self, parent, text, command, primary=False):
         return tk.Button(parent, text=text, command=command,
-                         bg=BLUE if primary else '#1B3852', fg=FG,
-                         activebackground='#277CBE' if primary else '#294D6C',
+                         bg=BLUE if primary else PANEL, fg=FG,
+                         activebackground=ACCENT_HOVER if primary else SURFACE_ALT,
                          activeforeground=FG, font=('Segoe UI', 10, 'bold'),
                          relief='flat', borderwidth=0, padx=12, pady=9, cursor='hand2',
-                         highlightthickness=1, highlightbackground='#355A79',
-                         highlightcolor='#80CBFF')
+                         highlightthickness=1, highlightbackground=FIELD_BORDER,
+                         highlightcolor=FOCUS)
 
     def _panel(self, parent):
         return tk.Frame(parent, bg=PANEL, highlightbackground=EDGE, highlightthickness=1)
@@ -108,9 +112,9 @@ class LivePage:
         top = tk.Frame(pane, bg=PANEL, padx=14, pady=11)
         top.grid(row=0, column=0, sticky='ew')
         self._label(top, 'Kamera langsung', 13, FG, True).pack(side='left')
-        self.visible_count = self._label(top, '0 QR terlihat', 10, '#9EC5E5')
+        self.visible_count = self._label(top, '0 QR terlihat', 10, MUTED)
         self.visible_count.pack(side='right')
-        self.video = tk.Canvas(pane, bg='#08121D', highlightthickness=0)
+        self.video = tk.Canvas(pane, bg=VIDEO_BG, highlightthickness=0)
         self.video.grid(row=1, column=0, sticky='nsew', padx=12)
         self.video.bind('<Configure>', lambda _event: self._draw_video())
         self._draw_placeholder()
@@ -196,10 +200,10 @@ class LivePage:
         for dx, dy, sx, sy in ((-65, -47, 1, 1), (65, -47, -1, 1),
                                (-65, 47, 1, -1), (65, 47, -1, -1)):
             self.video.create_line(x+dx, y+dy, x+dx+sx*20, y+dy,
-                                   fill='#4F8AB6', width=3)
+                                   fill=VIDEO_MUTED, width=3)
             self.video.create_line(x+dx, y+dy, x+dx, y+dy+sy*20,
-                                   fill='#4F8AB6', width=3)
-        self.video.create_text(x, y, text='Kamera belum aktif', fill='#C9D8E7',
+                                   fill=VIDEO_MUTED, width=3)
+        self.video.create_text(x, y, text='Kamera belum aktif', fill=VIDEO_FG,
                                font=('Segoe UI', 12, 'bold'))
 
     def _draw_video(self):
@@ -223,7 +227,7 @@ class LivePage:
             if not detection.visible:
                 continue
             item = self._items.get(detection.code, {})
-            color = INK.get(item.get('status'), '#9BBBD4')
+            color = VIDEO_STATUS_COLORS.get(item.get('status'), VIDEO_MUTED)
             coords = [coordinate for px, py in detection.points
                       for coordinate in (offset_x+px*scale, offset_y+py*scale)]
             if len(coords) != 8:
@@ -231,35 +235,35 @@ class LivePage:
             self.video.create_polygon(*coords, fill='', outline=color, width=3)
             bx, by = coords[0], coords[1]
             self.video.create_oval(bx-15, by-24, bx+15, by+6, fill=color,
-                                   outline='#071B2B', width=2)
+                                   outline=VIDEO_BG, width=2)
             self.video.create_text(bx, by-9, text=f'{number:02d}',
-                                   fill='#0A1A2A', font=('Segoe UI', 9, 'bold'))
+                                   fill=VIDEO_BG, font=('Segoe UI', 9, 'bold'))
 
     def _row(self, code):
-        shell = tk.Frame(self.list_body, bg='#182F47', highlightbackground=EDGE,
+        shell = tk.Frame(self.list_body, bg=SURFACE_ALT, highlightbackground=EDGE,
                          highlightthickness=1)
         shell.pack(fill='x', padx=(1, 4), pady=(0, 8))
-        stripe = tk.Frame(shell, bg='#56728C', width=4)
+        stripe = tk.Frame(shell, bg=FIELD_BORDER, width=4)
         stripe.pack(side='left', fill='y')
         stripe.pack_propagate(False)
-        content = tk.Frame(shell, bg='#182F47', padx=10, pady=8)
+        content = tk.Frame(shell, bg=SURFACE_ALT, padx=10, pady=8)
         content.pack(fill='both', expand=True)
-        line = tk.Frame(content, bg='#182F47')
+        line = tk.Frame(content, bg=SURFACE_ALT)
         line.pack(fill='x')
-        badge = self._label(line, '01', 9, FG, True, '#244762', anchor='center', width=3)
+        badge = self._label(line, '01', 9, FG, True, NEUTRAL_BG, anchor='center', width=3)
         badge.pack(side='left', padx=(0, 9))
-        material = self._label(line, '', 11, FG, True, '#182F47')
+        material = self._label(line, '', 11, FG, True, SURFACE_ALT)
         material.pack(side='left', fill='x', expand=True)
-        age = self._label(line, '', 9, MUTED, True, '#182F47')
+        age = self._label(line, '', 9, MUTED, True, SURFACE_ALT)
         age.pack(side='right')
-        location = self._label(content, '', 9, MUTED, bg='#182F47')
+        location = self._label(content, '', 9, MUTED, bg=SURFACE_ALT)
         location.pack(fill='x', pady=(5, 4))
-        status = self._label(content, '', 9, MUTED, True, '#182F47')
+        status = self._label(content, '', 9, MUTED, True, SURFACE_ALT)
         status.pack(fill='x')
-        advice = self._label(content, '', 9, FG, bg='#182F47',
+        advice = self._label(content, '', 9, FG, bg=SURFACE_ALT,
                              justify='left', wraplength=300)
         advice.pack(fill='x', pady=(5, 0))
-        decision = self._label(content, '', 9, MUTED, bg='#182F47',
+        decision = self._label(content, '', 9, MUTED, bg=SURFACE_ALT,
                                justify='left', wraplength=300)
         decision.pack(fill='x', pady=(4, 0))
         widgets = (shell, stripe, content, line, badge, material, age, location, status,

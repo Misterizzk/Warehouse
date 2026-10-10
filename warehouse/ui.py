@@ -9,16 +9,19 @@ from .live_monitor import LiveMonitor, LiveSnapshot
 from .recommendations import RecommendationService, recommend_for
 from .recommendation_data import recommendation_context
 
-BG = "#081827"
-PANEL = "#10243A"
-FG = "#F1F6FC"
-MUTED = "#B1C3D5"
-BLUE = "#1768CE"
-SIDEBAR = "#0C2034"
-HEADER = "#0E263F"
-EDGE = "#24415C"
-STATUS_COLORS = {"Normal":"#58DCA5", "Warning":"#F4C66A", "Melewati batas":"#FF8A8A", "Data perlu diperbaiki":"#CBD5E1"}
-STATUS_BACKGROUNDS = {"Normal":"#12372F", "Warning":"#3B321B", "Melewati batas":"#40242D", "Data perlu diperbaiki":"#253447"}
+from .theme import (
+    BG, PANEL, FG, MUTED, ACCENT, ACCENT_HOVER, SIDEBAR, HEADER, EDGE,
+    ON_DARK, MUTED_ON_DARK, FIELD_BORDER, FOCUS, SURFACE_ALT, ROW_SELECTED,
+    DISABLED_BG, DISABLED_FG, SCROLL_THUMB, SCROLL_TRACK, DARK_HOVER, SUCCESS,
+    STATUS_COLORS as THEME_STATUS_COLORS,
+    STATUS_BACKGROUNDS as THEME_STATUS_BACKGROUNDS, VIDEO_STATUS_COLORS,
+)
+
+BLUE = ACCENT  # Compatibility for pages importing the shared primary color.
+# Keep the age-status filter's original options and ordering.
+STATUS_COLORS = {name: THEME_STATUS_COLORS[name] for name in
+                 ('Normal', 'Warning', 'Melewati batas', 'Data perlu diperbaiki')}
+STATUS_BACKGROUNDS = {name: THEME_STATUS_BACKGROUNDS[name] for name in STATUS_COLORS}
 
 
 def display_time(value):
@@ -74,36 +77,48 @@ class Application:
         root.minsize(800, 520)
         style = ttk.Style(root)
         style.theme_use("clam")
+        style.configure('.', background=BG, foreground=FG)
         style.configure("Treeview", background=PANEL, fieldbackground=PANEL, foreground=FG,
                         font=("Segoe UI", 10), rowheight=38, borderwidth=0, relief="flat")
-        style.configure("Treeview.Heading", background="#1B3853", foreground="#D6E7F7",
+        style.configure("Treeview.Heading", background=HEADER, foreground=ON_DARK,
                         font=("Segoe UI", 10, "bold"), padding=(12,11), relief="flat", borderwidth=0)
-        style.map("Treeview.Heading", background=[("active", "#254C6E")])
+        style.map("Treeview.Heading", background=[("active", DARK_HOVER)])
         style.layout("Treeview", [("Treeview.treearea", {"sticky":"nswe"})])
-        style.layout("Treeview.Heading", [("Treeheading.padding", {"sticky":"nswe", "children":[
-            ("Treeheading.text", {"sticky":"we"})]})])
+        # The cell paints the header background; padding alone only draws text.
+        style.layout("Treeview.Heading", [("Treeheading.cell", {"sticky":"nswe"}),
+            ("Treeheading.padding", {"sticky":"nswe", "children":[
+                ("Treeheading.text", {"sticky":"we"})]})])
         for orientation in ("Vertical", "Horizontal"):
             name=f"{orientation}.TScrollbar"
             style.layout(name, [(f"{orientation}.Scrollbar.trough", {"sticky":"nswe", "children":[
                 (f"{orientation}.Scrollbar.thumb", {"sticky":"nswe", "expand":"1"})]})])
-            style.configure(name, background="#466987", troughcolor="#10283E", bordercolor="#10283E",
-                            lightcolor="#466987", darkcolor="#466987", width=9, arrowsize=0,
+            style.configure(name, background=SCROLL_THUMB, troughcolor=SCROLL_TRACK, bordercolor=SCROLL_TRACK,
+                            lightcolor=SCROLL_THUMB, darkcolor=SCROLL_THUMB, width=9, arrowsize=0,
                             borderwidth=0, relief="flat")
-            style.map(name, background=[("active","#79A8CD"), ("pressed","#61B5F7")])
-        style.map("Treeview", background=[("selected", "#17548D")], foreground=[("selected", "white")])
+            style.map(name, background=[("pressed",FOCUS), ("active",MUTED)])
+        style.map("Treeview", background=[("selected", ROW_SELECTED)], foreground=[("selected", FG)])
         style.configure('Dashboard.Treeview',rowheight=32,font=('Segoe UI',10),background=PANEL,fieldbackground=PANEL)
-        style.configure('Dashboard.Treeview.Heading',background='#19334C',foreground='#B8D4F3',font=('Segoe UI',10,'bold'),padding=(10,8))
+        style.configure('Dashboard.Treeview.Heading',background=HEADER,foreground=ON_DARK,font=('Segoe UI',10,'bold'),padding=(10,8))
         for name in ('TCombobox', 'Warehouse.TCombobox'):
-            style.configure(name,fieldbackground='#172F46',background='#172F46',foreground=FG,
-                            arrowcolor='#81C6FF',bordercolor='#3B5F7E',lightcolor='#3B5F7E',
-                            darkcolor='#3B5F7E',padding=7,relief='flat')
-            style.map(name,fieldbackground=[('readonly','#172F46'),('focus','#1C3A56')],
-                      foreground=[('readonly',FG)],bordercolor=[('focus','#58AFFF')],
-                      arrowcolor=[('active','#B7E1FF')])
-        root.option_add('*TCombobox*Listbox.background', '#172F46')
+            style.configure(name,fieldbackground=PANEL,background=PANEL,foreground=FG,
+                            arrowcolor=FG,bordercolor=FIELD_BORDER,lightcolor=FIELD_BORDER,
+                            darkcolor=FIELD_BORDER,padding=7,relief='flat')
+            style.map(name,fieldbackground=[('disabled',DISABLED_BG),('focus',ROW_SELECTED),('readonly',PANEL)],
+                      background=[('disabled',DISABLED_BG),('active',SURFACE_ALT)],
+                      foreground=[('disabled',DISABLED_FG),('readonly',FG)],
+                      bordercolor=[('focus',FOCUS)],lightcolor=[('focus',FOCUS)],darkcolor=[('focus',FOCUS)],
+                      arrowcolor=[('disabled',DISABLED_FG),('active',FOCUS)],
+                      selectbackground=[('!disabled',ROW_SELECTED)],selectforeground=[('!disabled',FG)])
+        root.option_add('*TCombobox*Listbox.background', PANEL)
         root.option_add('*TCombobox*Listbox.foreground', FG)
-        root.option_add('*TCombobox*Listbox.selectBackground', '#2563A2')
+        root.option_add('*TCombobox*Listbox.selectBackground', ROW_SELECTED)
         root.option_add('*TCombobox*Listbox.selectForeground', FG)
+        root.option_add('*Button.disabledForeground', DISABLED_FG)
+        for widget in ('Entry', 'Text'):
+            root.option_add(f'*{widget}.selectBackground', ROW_SELECTED)
+            root.option_add(f'*{widget}.selectForeground', FG)
+        root.option_add('*Entry.disabledBackground', DISABLED_BG)
+        root.option_add('*Entry.disabledForeground', DISABLED_FG)
         root.columnconfigure(1, weight=1)
         root.rowconfigure(1, weight=1)
         from .visuals import icon
@@ -111,42 +126,44 @@ class Application:
         sidebar.grid(row=1,column=0,rowspan=2,sticky="nsew")
         sidebar.pack_propagate(False)
         self.brand_icons={}
+        self.nav_selected_icons = {}
         self.nav = {}
         self.nav_markers = {}
         for page,kind in (("Dashboard","home"),("Pengecekan","clipboard"),("Data Barang","box"),("Laporan","chart"),("Live","scan")):
-            self.brand_icons[page]=icon(kind,25,master=root)
+            self.brand_icons[page]=icon(kind,25,ON_DARK,master=root)
+            self.nav_selected_icons[page]=icon(kind,25,FG,master=root)
             nav_row=tk.Frame(sidebar,bg=SIDEBAR)
             nav_row.pack(fill='x',pady=(0,7))
             marker=tk.Frame(nav_row,bg=SIDEBAR,width=3)
             marker.pack(side='left',fill='y')
             marker.pack_propagate(False)
-            b=tk.Button(nav_row,text='  '+page,image=self.brand_icons[page],compound='left',anchor="w",font=("Segoe UI",11),fg=FG,bg=SIDEBAR,activebackground='#205B90',activeforeground=FG,
-                        relief="flat",borderwidth=0,padx=10,pady=13,highlightthickness=1,highlightbackground=SIDEBAR,highlightcolor='#76C5FF',cursor='hand2',
+            b=tk.Button(nav_row,text='  '+page,image=self.brand_icons[page],compound='left',anchor="w",font=("Segoe UI",11),fg=ON_DARK,bg=SIDEBAR,activebackground=DARK_HOVER,activeforeground=ON_DARK,
+                        relief="flat",borderwidth=0,padx=10,pady=13,highlightthickness=1,highlightbackground=SIDEBAR,highlightcolor=ACCENT,cursor='hand2',
                         command=lambda p=page:self.show(p))
             b.pack(side='left',fill="x",expand=True)
-            b.bind('<Enter>',lambda e,button=b,p=page:button.configure(bg='#173A5B') if self.page!=p else None)
-            b.bind('<Leave>',lambda e,button=b,p=page:button.configure(bg=SIDEBAR) if self.page!=p else None)
+            b.bind('<Enter>',lambda e,button=b,p=page:button.configure(bg=DARK_HOVER) if self.page not in (p,'Lokasi' if p=='Data Barang' else p) else None)
+            b.bind('<Leave>',lambda e,button=b,p=page:button.configure(bg=SIDEBAR) if self.page not in (p,'Lokasi' if p=='Data Barang' else p) else None)
             self.nav[page]=b
             self.nav_markers[page]=marker
-        tk.Label(sidebar,text="BARANG TERKONTROL\nOPERASIONAL LEBIH MAJU",font=("Segoe UI",8),fg="#91ADCA",bg=SIDEBAR,justify="left",padx=10,pady=14).pack(side="bottom",anchor="w")
-        tk.Frame(sidebar,bg='#284763',height=1).pack(side='bottom',fill='x',padx=8)
+        tk.Label(sidebar,text="BARANG TERKONTROL\nOPERASIONAL LEBIH MAJU",font=("Segoe UI",8),fg=MUTED_ON_DARK,bg=SIDEBAR,justify="left",padx=10,pady=14).pack(side="bottom",anchor="w")
+        tk.Frame(sidebar,bg=DARK_HOVER,height=1).pack(side='bottom',fill='x',padx=8)
         header=tk.Frame(root,bg=HEADER,padx=18,pady=10,highlightbackground=EDGE,highlightthickness=1)
         header.grid(row=0,column=0,columnspan=2,sticky="ew")
-        self.brand_icons['logo']=icon('warehouse',34,'#2C9DF4',master=root)
+        self.brand_icons['logo']=icon('warehouse',34,ACCENT,master=root)
         tk.Label(header,image=self.brand_icons['logo'],bg=HEADER).pack(side='left',padx=(0,10))
-        tk.Label(header,text='WAREHOUSE',font=('Segoe UI',20,'bold'),bg=HEADER,fg=FG).pack(side='left')
-        tk.Label(header,text=' CHECK',font=('Segoe UI',20,'bold'),bg=HEADER,fg='#59B3FF').pack(side='left')
-        self.title=tk.Label(header,text="",font=("Segoe UI",10),fg=MUTED,bg=HEADER,padx=20)
+        tk.Label(header,text='WAREHOUSE',font=('Segoe UI',20,'bold'),bg=HEADER,fg=ON_DARK).pack(side='left')
+        tk.Label(header,text=' CHECK',font=('Segoe UI',20,'bold'),bg=HEADER,fg=ACCENT).pack(side='left')
+        self.title=tk.Label(header,text="",font=("Segoe UI",10),fg=MUTED_ON_DARK,bg=HEADER,padx=20)
         self.title.pack(side='left')
-        self.header_time=tk.Label(header,text=datetime.now().strftime('%d %b %Y  %H:%M'),font=('Segoe UI',10),bg=HEADER,fg=MUTED)
+        self.header_time=tk.Label(header,text=datetime.now().strftime('%d %b %Y  %H:%M'),font=('Segoe UI',10),bg=HEADER,fg=MUTED_ON_DARK)
         self.header_time.pack(side='right',padx=8)
         self.live_indicator=tk.Label(header,text='● LIVE NONAKTIF',font=('Segoe UI',9,'bold'),
-                                     bg=HEADER,fg='#91A8C1',cursor='hand2',padx=10)
+                                     bg=HEADER,fg=MUTED_ON_DARK,cursor='hand2',padx=10)
         self.live_indicator.pack(side='right',padx=(5,10))
         self.live_indicator.bind('<Button-1>',lambda _event:self.show('Live'))
         self.body=tk.Frame(root,bg=BG,padx=14,pady=12)
         self.body.grid(row=1,column=1,sticky="nsew")
-        footer=tk.Label(root,text="Data simulasi  •  Tersimpan di perangkat ini",bg=BG,fg='#7897B8',font=("Segoe UI",8),anchor="w",padx=16,pady=4)
+        footer=tk.Label(root,text="Data simulasi  •  Tersimpan di perangkat ini",bg=BG,fg=MUTED,font=("Segoe UI",8),anchor="w",padx=16,pady=4)
         footer.grid(row=2,column=1,sticky="ew")
         footer.bind("<Configure>",lambda e:footer.configure(wraplength=max(200,e.width-40)))
         self.footer=footer
@@ -163,11 +180,11 @@ class Application:
         return w
 
     def action_button(self,parent,text,command,primary=False):
-        return tk.Button(parent,text=text,command=command,bg=BLUE if primary else '#1A3651',
-                         fg=FG,activebackground='#1A6CD0' if primary else '#254C70',
-                         activeforeground=FG,relief='flat',borderwidth=0,padx=14,pady=9,
+        return tk.Button(parent,text=text,command=command,bg=ACCENT if primary else PANEL,
+                         fg=FG,activebackground=ACCENT_HOVER if primary else SURFACE_ALT,
+                         activeforeground=FG,disabledforeground=DISABLED_FG,relief='flat',borderwidth=0,padx=14,pady=9,
                          font=('Segoe UI',10,'bold' if primary else 'normal'),cursor='hand2',
-                         highlightthickness=1,highlightbackground='#315574',highlightcolor='#7BC6FF')
+                         highlightthickness=1,highlightbackground=FOCUS if primary else FIELD_BORDER,highlightcolor=FOCUS)
 
     def scroll_content(self):
         canvas=tk.Canvas(self.body,bg=BG,highlightthickness=0)
@@ -192,8 +209,13 @@ class Application:
                               else 'Data simulasi  •  Tersimpan di perangkat ini')
         for name,b in self.nav.items():
             selected=name==page or (page=='Lokasi' and name=='Data Barang')
-            b.configure(bg='#164F84' if selected else SIDEBAR)
-            self.nav_markers[name].configure(bg='#69C3FF' if selected else SIDEBAR)
+            b.configure(bg=ACCENT if selected else SIDEBAR,fg=FG if selected else ON_DARK,
+                        activebackground=ACCENT_HOVER if selected else DARK_HOVER,
+                        activeforeground=FG if selected else ON_DARK,
+                        highlightbackground=ACCENT if selected else SIDEBAR,
+                        highlightcolor=FOCUS if selected else ACCENT,
+                        image=self.nav_selected_icons[name] if selected else self.brand_icons[name])
+            self.nav_markers[name].configure(bg=ACCENT if selected else SIDEBAR)
         for child in self.body.winfo_children():child.destroy()
         self.rows=self.inventory.list_batches()
         if page=="Dashboard":self.dashboard()
@@ -286,12 +308,12 @@ class Application:
         red = sum(self.live_details.get(d.code, {}).get('status') == 'Melewati batas'
                   for d in snapshot.detections)
         if self.live_paused_for_scan:
-            indicator, color = '● LIVE JEDA · Kamera dipakai pengecekan', '#F4C66A'
+            indicator, color = '● LIVE JEDA · Kamera dipakai pengecekan', VIDEO_STATUS_COLORS['Warning']
         elif self.live_monitor.is_running and not self.live_stopping:
             indicator = f'● LIVE AKTIF · {len(snapshot.detections)} QR · {red} lewat batas'
-            color = '#58DCA5'
+            color = VIDEO_STATUS_COLORS['Normal']
         else:
-            indicator, color = '● LIVE NONAKTIF', '#91A8C1'
+            indicator, color = '● LIVE NONAKTIF', MUTED_ON_DARK
         self.live_indicator.configure(text=indicator, fg=color)
         if self.page == 'Live' and hasattr(self, 'live_page'):
             self.live_page.update(snapshot, self.live_details, self.live_error)
@@ -332,9 +354,9 @@ class Application:
             widget=(ttk.Combobox(filters,textvariable=var,values=values,state='readonly',
                                  width=13 if var is self.availability_filter else 20,
                                  style='Warehouse.TCombobox') if values else
-                    tk.Entry(filters,textvariable=var,bg='#172F46',fg=FG,insertbackground=FG,
+                    tk.Entry(filters,textvariable=var,bg=PANEL,fg=FG,insertbackground=FG,
                              relief='flat',font=('Segoe UI',11),highlightthickness=1,
-                             highlightbackground='#3B5F7E',highlightcolor='#58AFFF'))
+                             highlightbackground=FIELD_BORDER,highlightcolor=FOCUS))
             widget.grid(row=1,column=i,sticky='ew',padx=(0,10),ipady=6 if not values else 2)
         self.inventory_notice=self.label(self.body,'',10)
         self.inventory_host=tk.Frame(self.body,bg=BG)
@@ -405,16 +427,16 @@ class Application:
         top=tk.Frame(self.drawer,bg=PANEL)
         top.pack(fill='x',pady=(0,9))
         tk.Label(top,text='Detail barang',bg=PANEL,fg=FG,font=('Segoe UI',14,'bold')).pack(side='left')
-        tk.Button(top,text='Tutup ×',command=self.close_detail,bg=PANEL,fg='#82C9FF',
-                  activebackground='#254C70',activeforeground=FG,relief='flat',padx=7,pady=5,
+        tk.Button(top,text='Tutup ×',command=self.close_detail,bg=PANEL,fg=FG,
+                  activebackground=SURFACE_ALT,activeforeground=FG,relief='flat',padx=7,pady=5,
                   cursor='hand2',highlightthickness=1,highlightbackground=PANEL,
-                  highlightcolor='#7BC6FF').pack(side='right')
+                  highlightcolor=FOCUS).pack(side='right')
         tk.Frame(self.drawer,bg=EDGE,height=1).pack(fill='x',pady=(0,10))
         self.stock_out_button=self.action_button(self.drawer,'Catat barang keluar',
                                                    lambda:self.show_stock_out(r['id']),True)
         self.stock_out_button.pack(fill='x',pady=(0,10))
         self.stock_out_button.configure(state='normal' if r['stock']>0 else 'disabled',
-                                        bg=BLUE if r['stock']>0 else '#31506C',disabledforeground=MUTED)
+                                        bg=ACCENT if r['stock']>0 else DISABLED_BG,disabledforeground=DISABLED_FG)
         canvas=tk.Canvas(self.drawer,bg=PANEL,width=294,highlightthickness=0)
         bar=ttk.Scrollbar(self.drawer,orient='vertical',command=canvas.yview)
         bar.pack(side='right',fill='y')
@@ -431,13 +453,13 @@ class Application:
                  justify='left',anchor='w',wraplength=270).pack(fill='x',pady=(1,11))
         shown_status='Stok habis' if r['stock']==0 else r['status']
         color,ink=COLORS[shown_status]
-        summary=tk.Frame(content,bg='#182F45',padx=11,pady=10)
+        summary=tk.Frame(content,bg=SURFACE_ALT,padx=11,pady=10)
         summary.pack(fill='x',pady=(0,12))
-        tk.Label(summary,text='STATUS SAAT INI',bg='#182F45',fg=MUTED,
+        tk.Label(summary,text='STATUS SAAT INI',bg=SURFACE_ALT,fg=MUTED,
                  font=('Segoe UI',8,'bold')).pack(anchor='w',pady=(0,5))
         tk.Label(summary,text=shown_status,bg=color,fg=ink,font=('Segoe UI',10,'bold'),
                  padx=10,pady=5).pack(anchor='w')
-        tk.Label(summary,text=f"Stok tersedia  {r['stock']} unit",bg='#182F45',fg=FG,
+        tk.Label(summary,text=f"Stok tersedia  {r['stock']} unit",bg=SURFACE_ALT,fg=FG,
                  font=('Segoe UI',10,'bold')).pack(anchor='w',pady=(9,0))
         advice = r.get('recommendation')
         if advice:
@@ -458,12 +480,12 @@ class Application:
                 tk.Label(content,text='PILIHAN TUJUAN',bg=PANEL,fg=MUTED,
                          font=('Segoe UI',9,'bold')).pack(anchor='w',pady=(0,5))
                 for number, option in enumerate(options, start=1):
-                    option_card = tk.Frame(content,bg='#182F45',padx=9,pady=7)
+                    option_card = tk.Frame(content,bg=SURFACE_ALT,padx=9,pady=7)
                     option_card.pack(fill='x',pady=(0,7))
-                    tk.Label(option_card,text=f"{number}. {option['title']}",bg='#182F45',fg=FG,
+                    tk.Label(option_card,text=f"{number}. {option['title']}",bg=SURFACE_ALT,fg=FG,
                              font=('Segoe UI',10,'bold'),anchor='w',justify='left',
                              wraplength=252).pack(fill='x')
-                    tk.Label(option_card,text=option['reason'],bg='#182F45',fg=MUTED,
+                    tk.Label(option_card,text=option['reason'],bg=SURFACE_ALT,fg=MUTED,
                              font=('Segoe UI',9),anchor='w',justify='left',
                              wraplength=252).pack(fill='x',pady=(3,0))
         action = r.get('latest_action')
@@ -479,7 +501,7 @@ class Application:
             if action.get('target_kind') and action.get('target_code'):
                 target_type='Customer' if action['target_kind']=='customer' else 'Site'
                 tk.Label(content,text=f"Tujuan keputusan: {target_type} {action['target_code']}",
-                         bg=PANEL,fg='#83C5FF',font=('Segoe UI',10,'bold'),
+                         bg=PANEL,fg=FG,font=('Segoe UI',10,'bold'),
                          anchor='w',justify='left',wraplength=270).pack(fill='x',pady=(4,0))
             tk.Label(content,text=f"Kondisi: {action['physical_condition']}\nAlasan: {action['reason']}",
                      bg=PANEL,fg=MUTED,font=('Segoe UI',9),anchor='w',justify='left',
@@ -489,7 +511,7 @@ class Application:
                      wraplength=270).pack(fill='x',pady=(0,11))
             if action['completed_at']:
                 tk.Label(content,text=f"Diselesaikan oleh {action['completed_by']} · {display_time(action['completed_at'])}\n{action['completion_note']}",
-                         bg=PANEL,fg='#70E5B3',font=('Segoe UI',9),anchor='w',justify='left',
+                         bg=PANEL,fg=SUCCESS,font=('Segoe UI',9),anchor='w',justify='left',
                          wraplength=270).pack(fill='x',pady=(0,11))
         else:
             tk.Label(content,text='Belum ada keputusan. Catat setelah pemeriksaan pada halaman Pengecekan.',
@@ -501,7 +523,7 @@ class Application:
         self.action_button(actions,'Edit batch',lambda:self.edit_batch(r)).grid(row=0,column=0,sticky='ew',padx=(0,4))
         self.action_button(actions,'Lihat label QR',lambda:self.show_label(r['id'])).grid(row=0,column=1,sticky='ew',padx=(4,0))
         history=self.action_button(content,'Lihat riwayat keluar',lambda:self.show_stock_history(r['id']))
-        history.configure(bg=PANEL,fg='#82C9FF',highlightbackground=PANEL,padx=0)
+        history.configure(bg=PANEL,fg=FG,highlightbackground=PANEL,padx=0)
         history.pack(anchor='w',pady=(3,13))
         tk.Frame(content,bg=EDGE,height=1).pack(fill='x',pady=(0,10))
         tk.Label(content,text='INFORMASI BATCH',bg=PANEL,fg=MUTED,
@@ -529,8 +551,13 @@ class Application:
         self.title.configure(text="Data Barang / Lokasi")
         for name,b in self.nav.items():
             selected=name=='Data Barang'
-            b.configure(bg='#164F84' if selected else SIDEBAR)
-            self.nav_markers[name].configure(bg='#69C3FF' if selected else SIDEBAR)
+            b.configure(bg=ACCENT if selected else SIDEBAR,fg=FG if selected else ON_DARK,
+                        activebackground=ACCENT_HOVER if selected else DARK_HOVER,
+                        activeforeground=FG if selected else ON_DARK,
+                        highlightbackground=ACCENT if selected else SIDEBAR,
+                        highlightcolor=FOCUS if selected else ACCENT,
+                        image=self.nav_selected_icons[name] if selected else self.brand_icons[name])
+            self.nav_markers[name].configure(bg=ACCENT if selected else SIDEBAR)
         for child in self.body.winfo_children():child.destroy()
         self.location_page=LocationPage(self)
 

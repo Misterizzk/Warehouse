@@ -20,6 +20,7 @@ Data aplikasi masih bersifat lokal/simulasi. Status umur bukan hasil penilaian k
 
 | Tujuan perubahan | Sumber dan titik masuk |
 |---|---|
+| Palet putih, charcoal, kuning dan warna status; warna overlay pada latar gelap | [theme.py](../warehouse/theme.py): token tema bersama |
 | Header, sidebar, footer, warna dasar, navigasi, detail barang | [ui.py](../warehouse/ui.py): `Application.__init__`, `show`, `show_item` |
 | Susunan Dashboard, metrik, prioritas, panel informasi, detail rak | [dashboard_ui.py](../warehouse/dashboard_ui.py): `DashboardPage` |
 | Denah tampak atas, target klik, keyboard, tooltip | [rack_map.py](../warehouse/rack_map.py): `RackMap` |

@@ -1,8 +1,9 @@
 """Small antialiased interface icons, drawn locally without image dependencies."""
 from PIL import Image,ImageDraw,ImageTk
+from .theme import FG
 
 
-def icon(kind,size=28,color='#8CB9E9',master=None):
+def icon(kind,size=28,color=FG,master=None):
     scale=3
     image=Image.new('RGBA',(size*scale,size*scale))
     d=ImageDraw.Draw(image)
@@ -20,15 +21,15 @@ def icon(kind,size=28,color='#8CB9E9',master=None):
         line([(16,16),(16,30)]);line([(9,6),(22,13)])
     elif kind=='check':
         d.ellipse((1*scale*size/32,1*scale*size/32,31*scale*size/32,31*scale*size/32),fill=color)
-        line([(9,16),(14,21),(24,10)],3,'#09243B')
+        line([(9,16),(14,21),(24,10)],3,(0,0,0,0))
     elif kind=='warning':
         d.polygon(pts([(16,2),(31,29),(1,29)]),fill=color)
-        line([(16,11),(16,19)],3,'#11253A');d.ellipse(tuple(v*size*scale/32 for v in (14.5,23,17.5,26)),fill='#11253A')
+        line([(16,11),(16,19)],3,(0,0,0,0));d.ellipse(tuple(v*size*scale/32 for v in (14.5,23,17.5,26)),fill=(0,0,0,0))
     elif kind=='alert':
         d.ellipse(tuple(v*size*scale/32 for v in (1,1,31,31)),fill=color)
-        line([(16,8),(16,19)],3,'#11253A');d.ellipse(tuple(v*size*scale/32 for v in (14.5,23,17.5,26)),fill='#11253A')
+        line([(16,8),(16,19)],3,(0,0,0,0));d.ellipse(tuple(v*size*scale/32 for v in (14.5,23,17.5,26)),fill=(0,0,0,0))
     elif kind=='clipboard':
-        box((6,6,26,30));box((11,3,21,9),'#10243A');line([(11,16),(22,16)]);line([(11,22),(20,22)])
+        box((6,6,26,30));box((11,3,21,9),(0,0,0,0));line([(11,16),(22,16)]);line([(11,22),(20,22)])
     elif kind=='chart':
         line([(4,3),(4,29),(30,29)])
         box((9,17,13,25),color);box((17,11,21,25),color);box((25,5,29,25),color)

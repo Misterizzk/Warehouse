@@ -103,7 +103,7 @@ arsip/                     Prototipe, data lama, cadangan
 |---|---|
 | `seed_demo()` minimal | 50 batch, 6 rak, 162 lokasi; hanya pada DB tanpa metadata `seed_date` |
 | DB source | Bisa sudah berisi perubahan pengguna; jumlah tidak dijadikan patokan tetap |
-| `data_uji/warehouse_demo_seed.db` | 200 batch pada rilis ini, 12 rak, 324 lokasi, skenario tambahan, dan salinan riwayat sumber |
+| `data_uji/warehouse_demo_seed.db` | Fixture 200 batch, 12 rak, 324 lokasi, skenario tambahan, dan satu sesi buatan PETUGAS-SIMULASI untuk tes; tanpa riwayat pengguna lama |
 | DB awal paket 1.0.1 | 200 batch, 324 lokasi, konteks Site/Customer; 0 sesi/hasil/keputusan/penyelesaian |
 
 Migrasi DB lama membuat tabel kebutuhan tetapi tidak mengisi skenario Site/Customer. Skenario berasal dari generator. Karena itu source dan paket dapat menunjukkan rekomendasi berbeda bila konteksnya berbeda.

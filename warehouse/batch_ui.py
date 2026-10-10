@@ -6,6 +6,10 @@ from datetime import date
 from .locations import Locations
 from .inventory import BatchValidationError
 from .ui import BG, PANEL, FG, MUTED, BLUE
+from .theme import (
+    ACCENT_HOVER, DANGER, EDGE, FIELD_BORDER, FOCUS,
+    SUCCESS, SURFACE_ALT,
+)
 
 
 class BatchEditor(tk.Toplevel):
@@ -22,7 +26,7 @@ class BatchEditor(tk.Toplevel):
         tk.Label(self, text=self.title(), bg=BG, fg=FG, font=('Segoe UI', 20, 'bold')).grid(sticky='w', padx=24, pady=(16, 3))
         tk.Label(self, text="ID batch: " + item['id'] + "  •  Perbarui data di bawah." if item else "Isi data barang dan lokasi. ID batch akan dibuat otomatis setelah disimpan.",
                  bg=BG, fg=MUTED, font=('Segoe UI', 10), wraplength=700, anchor='w').grid(sticky='w', padx=24)
-        form = tk.Frame(self, bg=PANEL, padx=18, pady=14, highlightbackground='#26445E', highlightthickness=1)
+        form = tk.Frame(self, bg=PANEL, padx=18, pady=14, highlightbackground=EDGE, highlightthickness=1)
         form.grid(row=2, column=0, sticky='nsew', padx=24, pady=(14, 10))
         form.columnconfigure((0, 1), weight=1, uniform='fields')
         tk.Label(form, text='Informasi barang', bg=PANEL, fg=FG,
@@ -46,10 +50,10 @@ class BatchEditor(tk.Toplevel):
             else:
                 widget = tk.Entry(cell, textvariable=var, bg=PANEL, fg=FG, insertbackground=FG,
                                   relief='flat', font=('Segoe UI', 11), highlightthickness=1,
-                                  highlightbackground='#3B5873', highlightcolor=BLUE)
+                                  highlightbackground=FIELD_BORDER, highlightcolor=FOCUS)
             widget.pack(fill='x', ipady=5)
             self.inputs[key] = widget
-            error = tk.Label(cell, text='', bg=PANEL, fg='#FFA3AA', font=('Segoe UI', 9), wraplength=300, justify='left')
+            error = tk.Label(cell, text='', bg=PANEL, fg=DANGER, font=('Segoe UI', 9), wraplength=300, justify='left')
             self.errors[key] = error
         self.message = tk.Label(self, text='Koreksi stok di formulir ini tidak tercatat sebagai pengeluaran. Untuk barang yang keluar gudang, gunakan "Catat barang keluar".' if item else 'Lokasi belum ada? Tutup formulir, lalu pilih "Kelola Lokasi" pada halaman Data Barang.',
                                 bg=BG, fg=MUTED, wraplength=700, justify='left', anchor='w', font=('Segoe UI', 9))
@@ -57,10 +61,10 @@ class BatchEditor(tk.Toplevel):
         actions = tk.Frame(self, bg=BG)
         actions.grid(row=4, column=0, sticky='ew', padx=24, pady=16)
         self.save_button = tk.Button(actions, text='Simpan perubahan' if item else 'Simpan barang & lihat QR', command=self.save,
-                                    bg=BLUE, fg=FG, activebackground='#22598C', activeforeground=FG,
+                                    bg=BLUE, fg=FG, activebackground=ACCENT_HOVER, activeforeground=FG,
                                     relief='flat', padx=18, pady=10, font=('Segoe UI', 11, 'bold'), cursor='hand2')
         self.save_button.pack(side='right')
-        tk.Button(actions, text='Batal', command=self.cancel, bg=PANEL, fg=FG, activebackground='#193A59',
+        tk.Button(actions, text='Batal', command=self.cancel, bg=PANEL, fg=FG, activebackground=SURFACE_ALT,
                   activeforeground=FG, relief='flat', padx=18, pady=10, cursor='hand2').pack(side='right', padx=10)
         self.initial = self.snapshot()
         self.protocol('WM_DELETE_WINDOW', self.cancel)
@@ -92,10 +96,10 @@ class BatchEditor(tk.Toplevel):
             self.inputs[exc.field].focus_set()
             return
         except (ValueError, sqlite3.Error) as exc:
-            self.message.configure(text=f'Belum tersimpan: {exc}', fg='#FFA3AA')
+            self.message.configure(text=f'Belum tersimpan: {exc}', fg=DANGER)
             return
         self.app.show('Data Barang')
-        self.app.inventory_notice.configure(text='Perubahan tersimpan.' if self.item else 'Barang berhasil ditambahkan.', fg='#58DCA5')
+        self.app.inventory_notice.configure(text='Perubahan tersimpan.' if self.item else 'Barang berhasil ditambahkan.', fg=SUCCESS)
         self.app.table.choose(key)
         self.destroy()
         self.app.show_label(key)

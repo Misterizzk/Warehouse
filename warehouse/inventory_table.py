@@ -3,14 +3,13 @@ import tkinter as tk
 from tkinter import ttk
 from .ui import display_time
 
-BG='#10243A'
-FG='#F1F6FC'
-MUTED='#AFC2D5'
-ROW_ALT='#142B43'
-ROW_SELECTED='#184369'
-COLORS={'Normal':('#173D34','#70E5B3'),'Warning':('#44391E','#FFD477'),
-        'Melewati batas':('#492935','#FFA3AA'),'Data perlu diperbaiki':('#334155','#E2E8F0'),
-        'Stok habis':('#29394A','#BDC9D8')}
+from .theme import (
+    PANEL as BG, FG, MUTED, ROW_ALT, ROW_SELECTED, HEADER, ON_DARK,
+    EDGE, FOCUS, SUCCESS, WARNING, STATUS_COLORS, STATUS_BACKGROUNDS,
+)
+
+COLORS = {name: (STATUS_BACKGROUNDS[name], STATUS_COLORS[name]) for name in
+          ('Normal', 'Warning', 'Melewati batas', 'Data perlu diperbaiki', 'Stok habis')}
 
 
 def recommendation_caption(row):
@@ -37,9 +36,9 @@ class InventoryTable(tk.Frame):
         self.selected=None
         self.widgets={}
         self.row_backgrounds={}
-        self.canvas=tk.Canvas(self,bg=BG,highlightthickness=1,highlightbackground='#223D55',highlightcolor='#64B8FF',takefocus=True)
+        self.canvas=tk.Canvas(self,bg=BG,highlightthickness=1,highlightbackground=EDGE,highlightcolor=FOCUS,takefocus=True)
         sy=ttk.Scrollbar(self,orient='vertical',command=self.canvas.yview)
-        self.header_canvas=tk.Canvas(self,bg='#19334B',height=45,highlightthickness=0)
+        self.header_canvas=tk.Canvas(self,bg=HEADER,height=45,highlightthickness=0)
         self.header_canvas.grid(row=0,column=0,sticky='ew')
         def horizontal(*args):
             self.canvas.xview(*args)
@@ -69,11 +68,11 @@ class InventoryTable(tk.Frame):
         if inspection:
             widths += (220,280)
             headings += ('Waktu cek','Catatan')
-        header=tk.Frame(self.header_canvas,bg='#19334B')
+        header=tk.Frame(self.header_canvas,bg=HEADER)
         header_window=self.header_canvas.create_window(0,0,window=header,anchor='nw')
         self.configure_columns(header,widths)
         for i,title in enumerate(headings):
-            tk.Label(header,text=title,bg='#19334B',fg='#D4E5F6',font=('Segoe UI',10,'bold'),anchor='w',padx=14,pady=12).grid(row=0,column=i,sticky='ew')
+            tk.Label(header,text=title,bg=HEADER,fg=ON_DARK,font=('Segoe UI',10,'bold'),anchor='w',padx=14,pady=12).grid(row=0,column=i,sticky='ew')
         for index,r in enumerate(rows):
             row_bg=BG if index%2==0 else ROW_ALT
             row=tk.Frame(self.content,bg=row_bg,height=82)
@@ -85,7 +84,7 @@ class InventoryTable(tk.Frame):
             description=r['description']
             if len(description)>39:description=description[:36]+'…'
             tk.Label(name,text=description,bg=row_bg,fg=MUTED,font=('Segoe UI',9),anchor='w').pack(fill='x',pady=(2,0))
-            tk.Label(name,text='Batch '+r['id'],bg=row_bg,fg='#8EBDE7',font=('Segoe UI',9),anchor='w').pack(fill='x',pady=(2,0))
+            tk.Label(name,text='Batch '+r['id'],bg=row_bg,fg=MUTED,font=('Segoe UI',9),anchor='w').pack(fill='x',pady=(2,0))
             for i,value in enumerate((r['location_code'],str(r['stock']),f"{r['age']} hari"),1):
                 tk.Label(row,text=value,bg=row_bg,fg=FG,font=('Segoe UI',10),anchor='w',padx=14).grid(row=0,column=i,sticky='ew')
             shown_status='Stok habis' if not inspection and r['stock']==0 else r['status']
@@ -101,9 +100,9 @@ class InventoryTable(tk.Frame):
                 if r['stock']==0:
                     caption_color=MUTED
                 elif action and action['action_status']=='Selesai':
-                    caption_color='#70E5B3'
+                    caption_color=SUCCESS
                 elif action:
-                    caption_color='#FFD477'
+                    caption_color=WARNING
                 else:
                     caption_color=ink
                 tk.Label(status_cell,text=caption,bg=row_bg,fg=caption_color,
@@ -113,7 +112,7 @@ class InventoryTable(tk.Frame):
                 for col,value in ((5,display_time(r['checked_at'])),(6,r['note'] or '—')):
                     shown=value if len(value)<=100 else value[:97]+'…'
                     tk.Label(row,text=shown,bg=row_bg,fg=MUTED,font=('Segoe UI',10),anchor='w',justify='left',wraplength=widths[col]-28).grid(row=0,column=col,sticky='ew',padx=14)
-            tk.Frame(self.content,bg='#21384C',height=1).pack(fill='x')
+            tk.Frame(self.content,bg=EDGE,height=1).pack(fill='x')
             self.widgets[r['id']]=(row,badge)
             self.row_backgrounds[r['id']]=row_bg
             self.bind_children(row,r['id'])

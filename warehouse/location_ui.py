@@ -3,6 +3,10 @@ import sqlite3
 import tkinter as tk
 from tkinter import ttk
 from .locations import Locations, parse_location
+from .theme import (
+    ACCENT_HOVER, DANGER, DISABLED_BG, DISABLED_FG, FIELD_BORDER,
+    FOCUS, ROW_ALT, SURFACE_ALT,
+)
 
 
 class LocationPage:
@@ -16,9 +20,9 @@ class LocationPage:
         toolbar = tk.Frame(app.body, bg=BG)
         toolbar.pack(fill="x", pady=(0,12))
         tk.Button(toolbar,text="← Data Barang",command=lambda:app.show("Data Barang"),bg=PANEL,fg=FG,
-                  activebackground='#193A59',activeforeground=FG,relief="flat",padx=14,pady=10,cursor='hand2').pack(side="left")
+                  activebackground=SURFACE_ALT,activeforeground=FG,relief="flat",padx=14,pady=10,cursor='hand2').pack(side="left")
         tk.Button(toolbar,text="+ Tambah rak (27 lokasi)",command=self.open_form,bg=BLUE,fg=FG,
-                  activebackground='#22598C',activeforeground=FG,relief="flat",padx=18,pady=10,
+                  activebackground=ACCENT_HOVER,activeforeground=FG,relief="flat",padx=18,pady=10,
                   font=('Segoe UI',10,'bold'),cursor='hand2').pack(side="right")
         app.label(app.body,"Lokasi penyimpanan",18,FG,True)
         app.label(app.body,"Setiap rak memiliki 3 kolom × 3 baris × 3 tingkat. Tingkat 01 paling bawah; kolom dan baris mengikuti denah.",10)
@@ -27,8 +31,8 @@ class LocationPage:
         tk.Label(filters,text='Cari kode lokasi',bg=BG,fg=MUTED,font=('Segoe UI',10)).pack(side='left',padx=(0,12))
         self.query=tk.StringVar()
         tk.Entry(filters,textvariable=self.query,bg=PANEL,fg=FG,insertbackground=FG,relief='flat',
-                 font=('Segoe UI',11),highlightthickness=1,highlightbackground='#345676',
-                 highlightcolor=BLUE).pack(side='left',fill='x',expand=True,ipady=6)
+                 font=('Segoe UI',11),highlightthickness=1,highlightbackground=FIELD_BORDER,
+                 highlightcolor=FOCUS).pack(side='left',fill='x',expand=True,ipady=6)
         self.status=tk.StringVar()
         tk.Label(app.body,textvariable=self.status,bg=BG,fg=MUTED,anchor="w",pady=10).pack(side="bottom",fill="x")
         frame=tk.Frame(app.body,bg=BG)
@@ -54,8 +58,8 @@ class LocationPage:
         sx.grid(row=1,column=0,sticky="ew")
         frame.rowconfigure(0,weight=1)
         frame.columnconfigure(0,weight=1)
-        self.table.tag_configure("odd",background="#142D45")
-        self.table.tag_configure("even",background="#11283F")
+        self.table.tag_configure("odd",background=ROW_ALT)
+        self.table.tag_configure("even",background=PANEL)
         self.query.trace_add('write',lambda *args:self.refresh())
         self.refresh()
 
@@ -97,23 +101,23 @@ class LocationPage:
             tk.Label(form,text=label,bg=BG,fg=MUTED,anchor="w",font=("Segoe UI",10)).grid(row=2+i,column=0,sticky="w",pady=8,padx=(0,20))
             entry=tk.Entry(form,textvariable=var,width=24,font=("Segoe UI",11),bg=PANEL,fg=FG,
                            insertbackground=FG,relief='flat',highlightthickness=1,
-                           highlightbackground='#345676',highlightcolor=BLUE)
+                           highlightbackground=FIELD_BORDER,highlightcolor=FOCUS)
             entry.grid(row=2+i,column=1,pady=8,ipady=6)
             if first is None:first=entry
         self.preview=tk.StringVar()
         self.error=tk.StringVar()
-        preview_card=tk.Frame(form,bg=PANEL,padx=12,pady=8,highlightbackground='#345676',highlightthickness=1)
+        preview_card=tk.Frame(form,bg=PANEL,padx=12,pady=8,highlightbackground=FIELD_BORDER,highlightthickness=1)
         preview_card.grid(row=4,column=0,columnspan=2,sticky='ew',pady=(14,4))
         tk.Label(preview_card,text='RENTANG ALAMAT YANG AKAN DIBUAT',bg=PANEL,fg=MUTED,
                  font=('Segoe UI',8,'bold'),anchor='w').pack(fill='x')
-        tk.Label(preview_card,textvariable=self.preview,bg=PANEL,fg="#64B8FF",font=("Segoe UI",11,"bold"),
+        tk.Label(preview_card,textvariable=self.preview,bg=PANEL,fg=FG,font=("Segoe UI",11,"bold"),
                  anchor='w').pack(fill='x')
-        tk.Label(form,textvariable=self.error,bg=BG,fg="#FF9B9B",wraplength=390,justify="left").grid(row=5,column=0,columnspan=2,sticky="w")
+        tk.Label(form,textvariable=self.error,bg=BG,fg=DANGER,wraplength=390,justify="left").grid(row=5,column=0,columnspan=2,sticky="w")
         self.save_button=tk.Button(form,text="Buat rak dan 27 lokasi",command=self.save,bg=BLUE,fg=FG,
-                                   activebackground='#22598C',activeforeground=FG,relief="flat",
-                                   disabledforeground=MUTED,font=('Segoe UI',10,'bold'),padx=15,pady=10,cursor='hand2')
+                                   activebackground=ACCENT_HOVER,activeforeground=FG,relief="flat",
+                                   disabledforeground=DISABLED_FG,font=('Segoe UI',10,'bold'),padx=15,pady=10,cursor='hand2')
         self.save_button.grid(row=6,column=1,sticky="e",pady=(16,0))
-        tk.Button(form,text="Batal",command=win.destroy,bg=PANEL,fg=FG,activebackground='#193A59',
+        tk.Button(form,text="Batal",command=win.destroy,bg=PANEL,fg=FG,activebackground=SURFACE_ALT,
                   activeforeground=FG,relief="flat",padx=15,pady=10,cursor='hand2').grid(row=6,column=0,sticky="w",pady=(16,0))
         for var in self.values:var.trace_add("write",self.update_preview)
         self.update_preview()
@@ -132,11 +136,11 @@ class LocationPage:
             duplicate=any(r['area']==area and r['rack']==rack for r in self.service.list())
             self.error.set("Rak sudah tersedia. Gunakan kode rak lain." if duplicate else "")
             self.save_button.configure(state="disabled" if duplicate else "normal",
-                                       bg='#31506C' if duplicate else self.colors[2])
+                                       bg=DISABLED_BG if duplicate else self.colors[2])
         except ValueError as exc:
             self.preview.set("Kode lokasi belum valid")
             self.error.set(str(exc))
-            self.save_button.configure(state="disabled",bg='#31506C')
+            self.save_button.configure(state="disabled",bg=DISABLED_BG)
 
     def save(self):
         try:

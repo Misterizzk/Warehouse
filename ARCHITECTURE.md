@@ -130,7 +130,7 @@ Kamera → worker capture/decode → antrean frame terbaru → pengelola track s
 | Lokasi | Peran |
 |---|---|
 | `data/warehouse_demo.db` | Database ketika kode Python dijalankan; dapat berisi data pengguna/pengembangan |
-| `data_uji/warehouse_demo_seed.db` | Data uji 200 batch untuk pembuatan paket; bisa memuat riwayat sumber |
+| `data_uji/warehouse_demo_seed.db` | Fixture simulasi 200 batch dengan satu sesi buatan PETUGAS-SIMULASI untuk tes; penyiapan demo menyalin master dan membersihkan riwayat |
 | `Aplikasi_Warehouse_Check_Rekomendasi_Final/data/warehouse_demo.db` | Database executable yang terpisah dari database sumber |
 | `Aplikasi_Warehouse_Check_Rekomendasi_Final/_internal/` | Python/dependensi/aset bundled; bukan tempat menyimpan transaksi |
 | `assets/warehouse/` | Aset visual yang ikut dibundel |

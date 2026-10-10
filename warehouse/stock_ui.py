@@ -7,14 +7,18 @@ from datetime import date, datetime
 from uuid import uuid4
 from .stock_movements import StockMovements
 from .ui import BG, PANEL, FG, MUTED, BLUE
+from .theme import (
+    ACCENT_HOVER, DANGER, DISABLED_BG, DISABLED_FG, FIELD_BORDER,
+    FOCUS, ROW_ALT, SUCCESS, SURFACE_ALT,
+)
 
 
 def button(parent, text, command, primary=False):
     return tk.Button(parent, text=text, command=command, bg=BLUE if primary else PANEL,
-                     fg=FG, activebackground='#1A6CD0' if primary else '#1B3A57', activeforeground=FG,
-                     disabledforeground='#9DB0C0', relief='flat', font=('Segoe UI',10),
+                     fg=FG, activebackground=ACCENT_HOVER if primary else SURFACE_ALT, activeforeground=FG,
+                     disabledforeground=DISABLED_FG, relief='flat', font=('Segoe UI',10),
                      padx=14, pady=9, cursor='hand2',highlightthickness=1,
-                     highlightbackground=BG,highlightcolor='#68B7FF')
+                     highlightbackground=BG,highlightcolor=FOCUS)
 
 
 class StockOutDialog(tk.Toplevel):
@@ -69,7 +73,7 @@ class StockOutDialog(tk.Toplevel):
             self.values[name]=tk.StringVar(value=value)
             entry=tk.Entry(cell,textvariable=self.values[name],bg=PANEL,fg=FG,insertbackground=FG,
                            font=('Segoe UI',11),relief='flat',highlightthickness=1,
-                           highlightbackground='#345470',highlightcolor=BLUE)
+                           highlightbackground=FIELD_BORDER,highlightcolor=FOCUS)
             entry.pack(fill='x',ipady=5)
             entry.bind('<FocusIn>',lambda e:self.reveal(e.widget))
             self.inputs[name]=entry
@@ -138,8 +142,8 @@ class StockOutDialog(tk.Toplevel):
         elif stock==0:info='Stok barang ini sudah habis.'
         elif quantity>stock:info=f'Jumlah keluar melebihi stok tersedia ({stock} unit).'
         else:info='Isi jumlah keluar dengan bilangan bulat lebih dari 0.'
-        self.remaining.configure(text=info,fg='#76E1B2' if valid else '#FFA3AA')
-        self.save_button.configure(state='normal' if valid and not self.saving else 'disabled',bg=BLUE if valid else '#31506C')
+        self.remaining.configure(text=info,fg=SUCCESS if valid else DANGER)
+        self.save_button.configure(state='normal' if valid and not self.saving else 'disabled',bg=BLUE if valid else DISABLED_BG)
 
     def save(self):
         if self.saving:return
@@ -151,7 +155,7 @@ class StockOutDialog(tk.Toplevel):
                 self.note_text.get('1.0','end-1c'),operation_id=self.operation_id)
         except (ValueError,sqlite3.Error) as exc:
             self.saving=False
-            self.message.configure(text=str(exc),fg='#FFA3AA')
+            self.message.configure(text=str(exc),fg=DANGER)
             fresh=next((r for r in self.app.inventory.list_batches(query=self.batch_id) if r['id']==self.batch_id),None)
             if fresh:self.item=fresh
             self.refresh_remaining()
@@ -161,7 +165,7 @@ class StockOutDialog(tk.Toplevel):
         self.destroy()
         self.app.show('Data Barang')
         self.app.table.choose(self.batch_id)
-        self.app.inventory_notice.configure(text=f"Pengeluaran {result['quantity']} unit tersimpan. Sisa stok: {result['stock_after']} unit.",fg='#76E1B2')
+        self.app.inventory_notice.configure(text=f"Pengeluaran {result['quantity']} unit tersimpan. Sisa stok: {result['stock_after']} unit.",fg=SUCCESS)
 
 
 class StockHistoryWindow(tk.Toplevel):
@@ -199,7 +203,7 @@ class StockHistoryWindow(tk.Toplevel):
             self.table.heading(name,text=title,anchor='w')
             self.table.column(name,width=width,minwidth=width,anchor='w')
         self.table.tag_configure('even',background=PANEL,foreground=FG)
-        self.table.tag_configure('odd',background='#152E47',foreground=FG)
+        self.table.tag_configure('odd',background=ROW_ALT,foreground=FG)
         self.table.grid(row=0,column=0,sticky='nsew')
         sy=ttk.Scrollbar(host,command=self.table.yview)
         sx=ttk.Scrollbar(host,orient='horizontal',command=self.table.xview)

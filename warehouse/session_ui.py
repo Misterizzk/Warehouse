@@ -8,14 +8,18 @@ from .recommendations import RecommendationService, recommend_for
 from .recommendation_data import recommendation_context
 from .inventory_table import InventoryTable
 from .ui import BG,PANEL,FG,MUTED,BLUE,display_time
+from .theme import (
+    ACCENT_HOVER, DANGER, DISABLED_FG, FIELD_BORDER, FOCUS,
+    ROW_ALT, SUCCESS, SURFACE_ALT,
+)
 
 
 def button(parent,text,command,primary=False):
     return tk.Button(parent,text=text,command=command,bg=BLUE if primary else PANEL,fg=FG,
-                     activebackground='#1A6CD0' if primary else '#1B3A57',activeforeground=FG,
-                     disabledforeground='#8FA6BB',font=('Segoe UI',10,'bold' if primary else 'normal'),
+                     activebackground=ACCENT_HOVER if primary else SURFACE_ALT,activeforeground=FG,
+                     disabledforeground=DISABLED_FG,font=('Segoe UI',10,'bold' if primary else 'normal'),
                      relief='flat',padx=14,pady=10,cursor='hand2',
-                     highlightthickness=1,highlightbackground=BG,highlightcolor='#68B7FF')
+                     highlightthickness=1,highlightbackground=BG,highlightcolor=FOCUS)
 
 
 def advice_for_result(db,session,item,decision=None):
@@ -77,7 +81,7 @@ class SessionPage:
             self.list_table.heading(key,text=title)
             self.list_table.column(key,width=width,minwidth=width)
         self.list_table.tag_configure('even',background=PANEL,foreground=FG)
-        self.list_table.tag_configure('odd',background='#152E47',foreground=FG)
+        self.list_table.tag_configure('odd',background=ROW_ALT,foreground=FG)
         self.list_table.grid(row=0,column=0,sticky='nsew')
         sy=ttk.Scrollbar(host,command=self.list_table.yview)
         sy.grid(row=0,column=1,sticky='ns')
@@ -114,7 +118,7 @@ class SessionPage:
             var=tk.StringVar(value=value)
             self.start_vars[key]=var
             tk.Entry(win,textvariable=var,bg=PANEL,fg=FG,insertbackground=FG,font=('Segoe UI',11),
-                     relief='flat',highlightthickness=1,highlightbackground='#355470',highlightcolor=BLUE).grid(row=i,column=1,sticky='ew',padx=20,ipady=6)
+                     relief='flat',highlightthickness=1,highlightbackground=FIELD_BORDER,highlightcolor=FOCUS).grid(row=i,column=1,sticky='ew',padx=20,ipady=6)
         error=tk.Label(win,text='Status dihitung dari umur barang saat dicek. Status tidak menilai kondisi fisiknya.',
                        bg=BG,fg=MUTED,wraplength=540,justify='left')
         error.grid(row=5,column=0,columnspan=2,sticky='w',padx=20,pady=12)
@@ -123,7 +127,7 @@ class SessionPage:
                 values={k:v.get() for k,v in self.start_vars.items()}
                 key=self.service.start(values['officer'],values['area'],values['normal'],values['limit'])
             except (ValueError,sqlite3.Error) as exc:
-                error.configure(text=str(exc),fg='#FFA3AA')
+                error.configure(text=str(exc),fg=DANGER)
                 return
             win.destroy()
             self.open_session(key)
@@ -154,7 +158,7 @@ class SessionPage:
             row=0,column=0,columnspan=3,sticky='w',pady=(0,5))
         self.code=tk.StringVar()
         self.code_entry=tk.Entry(codes,textvariable=self.code,bg=PANEL,fg=FG,insertbackground=FG,font=('Segoe UI',11),
-                                 relief='flat',highlightthickness=1,highlightbackground='#355470',highlightcolor=BLUE)
+                                 relief='flat',highlightthickness=1,highlightbackground=FIELD_BORDER,highlightcolor=FOCUS)
         self.code_entry.grid(row=1,column=0,sticky='ew',ipady=8,padx=(0,8))
         self.add_button=button(codes,'Tambahkan ke hasil',self.add,True)
         self.add_button.grid(row=1,column=1)
@@ -271,19 +275,19 @@ class SessionPage:
         context=('TERKINI' if session['status']=='Draft' else
                  'SAAT KEPUTUSAN' if decision else 'DARI DATA SAAT CEK')
         source=' · Simulasi' if advice.get('source')=='Simulasi' else ''
-        tk.Label(card,text=f"SARAN APLIKASI {context}{source}  •  {advice['title']}",bg=PANEL,fg='#83C5FF',
+        tk.Label(card,text=f"SARAN APLIKASI {context}{source}  •  {advice['title']}",bg=PANEL,fg=FG,
                  font=('Segoe UI',11,'bold'),anchor='w').pack(fill='x')
         for value,color in ((advice['reason'],MUTED),(advice['next_action'],FG)):
             tk.Label(card,text=value,bg=PANEL,fg=color,font=('Segoe UI',10),
                      justify='left',anchor='w',wraplength=630).pack(fill='x',pady=(5,0))
         for number, option in enumerate(advice.get('options') or (), start=1):
-            tk.Label(card,text=f"Opsi {number}: {option['title']}",bg=PANEL,fg='#B7DCFF',
+            tk.Label(card,text=f"Opsi {number}: {option['title']}",bg=PANEL,fg=FG,
                      font=('Segoe UI',10,'bold'),justify='left',anchor='w',
                      wraplength=630).pack(fill='x',pady=(5,0))
         tk.Label(content,text='Saran ini mempertimbangkan umur dan kebutuhan simulasi. Keputusan dibuat setelah pemeriksaan fisik oleh petugas.' if source else
                  'Saran ini berdasarkan umur barang. Keputusan dibuat setelah pemeriksaan fisik oleh petugas.',
                  bg=BG,fg=MUTED,font=('Segoe UI',9),anchor='w',wraplength=650,justify='left').pack(fill='x',pady=(9,12))
-        feedback=tk.Label(footer,text='',bg=BG,fg='#FFA3AA',font=('Segoe UI',10),anchor='w',
+        feedback=tk.Label(footer,text='',bg=BG,fg=DANGER,font=('Segoe UI',10),anchor='w',
                           wraplength=650,justify='left')
 
         if session['status']=='Draft':
@@ -344,7 +348,7 @@ class SessionPage:
                      anchor='w').pack(fill='x',pady=(11,4))
             self.reason_text=tk.Text(content,bg=PANEL,fg=FG,insertbackground=FG,font=('Segoe UI',10),
                                      wrap='word',height=4,relief='flat',padx=10,pady=8,
-                                     highlightthickness=1,highlightbackground='#355470',highlightcolor=BLUE)
+                                     highlightthickness=1,highlightbackground=FIELD_BORDER,highlightcolor=FOCUS)
             self.reason_text.pack(fill='both',expand=True)
             if decision:self.reason_text.insert('1.0',decision['reason'])
             feedback.pack(fill='x',pady=(8,0))
@@ -369,7 +373,7 @@ class SessionPage:
             self.action_save.pack(side='right')
             button(actions,'Batal',win.destroy).pack(side='right',padx=8)
         else:
-            tk.Label(content,text='KEPUTUSAN PETUGAS',bg=BG,fg='#83C5FF',
+            tk.Label(content,text='KEPUTUSAN PETUGAS',bg=BG,fg=FG,
                      font=('Segoe UI',11,'bold'),anchor='w').pack(fill='x')
             if decision:
                 target=(f"Tujuan keputusan: {'Customer' if decision['target_kind']=='customer' else 'Site'} "
@@ -386,7 +390,7 @@ class SessionPage:
             self.action_save=button(content,'Simpan keputusan',lambda:None)
             self.action_save.configure(state='disabled')
             if decision and decision['action_status']=='Belum selesai':
-                tk.Label(content,text='Penyelesaian tindak lanjut',bg=BG,fg='#83C5FF',
+                tk.Label(content,text='Penyelesaian tindak lanjut',bg=BG,fg=FG,
                          font=('Segoe UI',11,'bold'),anchor='w').pack(fill='x',pady=(4,5))
                 tk.Label(content,text='Nama petugas yang menyelesaikan',bg=BG,fg=MUTED,
                          font=('Segoe UI',10),anchor='w').pack(fill='x')
@@ -412,7 +416,7 @@ class SessionPage:
                 self.completion_save.pack(side='right',pady=(8,0))
             elif decision and decision['action_status']=='Selesai':
                 tk.Label(content,text=f"Selesai oleh {decision['completed_by']} pada {display_time(decision['completed_at'])}\n"
-                         f"Catatan: {decision['completion_note'] or '—'}",bg=BG,fg='#58DCA5',
+                         f"Catatan: {decision['completion_note'] or '—'}",bg=BG,fg=SUCCESS,
                          font=('Segoe UI',10),justify='left',anchor='w',wraplength=650).pack(fill='x')
             button(footer,'Tutup',win.destroy).pack(side='right',padx=8,pady=(8,0))
         def reveal(widget):
@@ -460,7 +464,7 @@ class SessionPage:
         header.grid(row=0,column=0,sticky='w',padx=20,pady=16)
         self.note_text=tk.Text(win,bg=PANEL,fg=FG,insertbackground=FG,font=('Segoe UI',11),
                                wrap='word',height=6,relief='flat',padx=12,pady=10,
-                               highlightthickness=1,highlightbackground='#355470',highlightcolor=BLUE)
+                               highlightthickness=1,highlightbackground=FIELD_BORDER,highlightcolor=FOCUS)
         self.note_text.grid(row=1,column=0,sticky='nsew',padx=20)
         initial=item['note'] if item else session['note']
         self.note_text.insert('1.0',initial)
@@ -469,7 +473,7 @@ class SessionPage:
         def save():
             try:self.service.save_note(session['id'],self.note_text.get('1.0','end-1c'),item['id'] if item else None)
             except (ValueError,sqlite3.Error) as exc:
-                error.configure(text=str(exc),fg='#FFA3AA')
+                error.configure(text=str(exc),fg=DANGER)
                 return
             win.destroy()
             self.open_session(session['id'])
